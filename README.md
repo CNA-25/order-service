@@ -41,17 +41,17 @@ PATCH? att minska productId saldo från lagret
 ## Databas
 
 Orders table:
-order_id - SERIAL & auto-increment
-user_id - INTEGER - den inloggades användarend unika id
-timestamp - TIMESTAMP - när beställningen gjordes
-order_price - DECIMAL - totala priset för hela beställningen (amount * price)
+- order_id - SERIAL & auto-increment
+- user_id - INTEGER - den inloggades användarend unika id
+- timestamp - TIMESTAMP - när beställningen gjordes
+- order_price - DECIMAL - totala priset för hela beställningen (amount * price)
 
 Order_items table:
-order_id - INTEGER - foreign key som är kopplad till Orders.order_id
-product_id - INTEGER - produktens id, kommer från productsAPI
-amount - INTEGER - antal produkter
+- order_id - INTEGER - foreign key som är kopplad till Orders.order_id
+- product_id - INTEGER - produktens id, kommer från productsAPI
+- amount - INTEGER - antal produkter
 
 Products table: (denna information kommer från productsAPI, men sparas också i vår egen DB)
-product_id - INTEGER - produktens unika id
-name - VARCHAR - namnet på produkten
-price - DECIMAL - produktens pris
+- product_id - INTEGER - produktens unika id
+- name - VARCHAR - namnet på produkten
+- price - DECIMAL - produktens pris
