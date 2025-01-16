@@ -1,0 +1,22 @@
+{
+  "name": "order-service",
+  "version": "1.0.0",
+  "description": "order-service node",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CNA-25/order-service.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CNA-25/order-service/issues"
+  },
+  "homepage": "https://github.com/CNA-25/order-service#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
