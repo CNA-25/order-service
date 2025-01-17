@@ -1,0 +1,13 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgreSQL"
+  url      = env("DATABASE_URL")
+}
+
+model test {
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  foo String
+}
