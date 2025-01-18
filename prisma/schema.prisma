@@ -3,11 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgreSQL"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model test {
-  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  id  String @id @default(uuid())
   foo String
 }
