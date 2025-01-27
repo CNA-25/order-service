@@ -8,7 +8,7 @@ router.get("orders/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    const orders = await prisma.order.findMany({
+    const orders = await prisma.orders.findMany({
       where: { userId: parseInt(user_id) },
       include: {
         orderItems: {
@@ -45,7 +45,7 @@ router.post("/orders", async (req, res) => {
   }
 
   try {
-    const newOrder = await prisma.order.create({
+    const newOrder = await prisma.orders.create({
       data: {
         user_id,
         products: JSON.stringify(products),
@@ -62,7 +62,7 @@ router.post("/orders", async (req, res) => {
 // Hämta alla beställningar
 router.get("/orders", async (req, res) => {
   try {
-    const orders = await prisma.order.findMany();
+    const orders = await prisma.orders.findMany();
     res.status(200).json(orders);
   } catch (error) {
     console.error(error);
