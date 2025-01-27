@@ -9,15 +9,15 @@ datasource db {
 
 // exempel på table
 
-model Order {
-  order_id   Int        @id @default(autoincrement()) @map("order_id")
-  user_id    Int        @map("user_id")
-  timestamp  DateTime   @default(now()) @map("timestamp")
-  order_price Decimal   @db.Decimal @map("order_price")
-  orderItems OrderItem[]
+model orders {
+  orderId     Int      @id @default(autoincrement()) @map("order_id")
+  userId      Int      @map("user_id")
+  timestamp   DateTime @default(now()) @map("timestamp")
+  orderPrice  Decimal  @db.Decimal @map("order_price")
+  orderItems  order_items[]
 }
 
-model OrderItem {
+model order_items {
   order_item_id Int       @id @default(autoincrement()) @map("order_item_id")
   order_id      Int       @map("order_id")
   product_id    Int       @map("product_id")
@@ -25,5 +25,5 @@ model OrderItem {
   product_price Decimal   @map("product_price") 
   product_name  String    @map("product_name")
 
-  order         Order     @relation(fields: [order_id], references: [order_id])
+  order         orders     @relation(fields: [order_id], references: [orderId])
 }
