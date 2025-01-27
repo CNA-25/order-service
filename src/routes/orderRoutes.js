@@ -4,7 +4,7 @@ const prisma = require("../config/prisma");
 
 // GET beställningar från vår DB som hör till en viss user_id. Return data or not found
 // Uppgift 1 i README. Ungefärlig kod eftersom databasen inte ännu är gjord
-router.get("orders/:user_id", async (req, res) => {
+router.get("/orders/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
   try {
