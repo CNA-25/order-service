@@ -3,25 +3,26 @@ const router = express.Router();
 const prisma = require("../config/prisma");
 
 // GET beställningar från vår DB som hör till en viss user_id. Return data or not found
-// Uppgift 1 i README. Ungefärlig kod eftersom databasen inte ännu är gjord
-router.get("/orders/:user_id", async (req, res) => {
-  const { user_id } = req.params;
+// Uppgift 1 i README.
+router.get("/orders/:user_id", async (req, res) => { // URL t.ex /orders/101
+  const { user_id } = req.params; // Hämtar user_id från URLen
 
   try {
-    const orders = await prisma.orders.findMany({
+    const orders = await prisma.orders.findMany({ // Hittar alla orders som hör till denna user_id
       where: { userId: parseInt(user_id) },
-      include: {
+      include: { // Inkluderar orderItems
         orderItems: true,
       },
     });
 
-    if (orders.length === 0) {
-      return res.status(400).json({ msg: "No orders found for this user." });
+    if (orders.length === 0) { // Om användaren inte har någon order
+      return res.status(404).json({ msg: `No orders found for user with ID: ${user_id}.` });
     }
 
+    // Om allt ok, returnerar orders
     res.status(200).json(orders);
     console.log(orders);
-  } catch (err) {
+  } catch (err) { // Om någonting misslyckas, returnera error 500
     console.error("Error fetching orders:", err);
     res.status(500).json({ msg: "Internal server error" });
   }
