@@ -11,11 +11,7 @@ router.get("/orders/:user_id", async (req, res) => {
     const orders = await prisma.orders.findMany({
       where: { userId: parseInt(user_id) },
       include: {
-        orderItems: {
-          include: {
-            product: true,
-          },
-        },
+        orderItems: true,
       },
     });
 
