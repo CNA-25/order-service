@@ -10,18 +10,20 @@ datasource db {
 // exempel på table
 
 model Order {
-  orderId     Int        @id @default(autoincrement())
-  userId      Int
-  timestamp   DateTime   @default(now())
-  orderPrice  Decimal    @db.Decimal
-  orderItems  OrderItem[]
+  order_id   Int        @id @default(autoincrement()) @map("order_id")
+  user_id    Int        @map("user_id")
+  timestamp  DateTime   @default(now()) @map("timestamp")
+  order_price Decimal   @db.Decimal @map("order_price")
+  orderItems OrderItem[]
 }
 
 model OrderItem {
-  orderItemId Int       @id @default(autoincrement())
-  orderId     Int
-  productId   Int
-  amount      Int
-  product     Product   @relation(fields: [productId], references: [productId])
-  order       Order     @relation(fields: [orderId], references: [orderId])
+  order_item_id Int       @id @default(autoincrement()) @map("order_item_id")
+  order_id      Int       @map("order_id")
+  product_id    Int       @map("product_id")
+  amount        Int       @map("amount")
+  product_price Decimal   @map("product_price") 
+  product_name  String    @map("product_name")
+
+  order         Order     @relation(fields: [order_id], references: [order_id])
 }
