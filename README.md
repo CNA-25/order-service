@@ -4,11 +4,6 @@
 1. Clone the project git clone https://github.com/CNA-25/order-service.git
 2. Make sure Node.js is installed with npm -v, if not, install it
 3. Install dependencies with npm install
-4. Run app.js with node app.js
-
-## Uppgiftsfördelning
--
-
 
 ## To-do lista:
 Order Service
@@ -31,7 +26,7 @@ POST? information om userId med dens beställning -> skickar ett email
 POST? information om userId med dens beställning -> skapar en faktura
 
 6.	/productsAPI
-GET information om produkterna ur produktregistret
+GET information om produkterna ur produktregistret (ännu oklart om detta behövs)
 
 7.	/inventoryAPI
 PATCH? att minska productId saldo från lagret
@@ -41,17 +36,15 @@ PATCH? att minska productId saldo från lagret
 ## Databas
 
 Orders table:
-- order_id - SERIAL & auto-increment
-- user_id - INTEGER - den inloggades användarend unika id
+- order_id - SERIAL & auto-increment, primary key
+- user_id - INTEGER - den inloggades användarens unika id
 - timestamp - TIMESTAMP - när beställningen gjordes
-- order_price - DECIMAL - totala priset för hela beställningen (amount * price)
+- order_price - NUMERIC - totala priset för hela beställningen (amount * price)
 
 Order_items table:
+- order_item_id - INTEGER (behövs denna?)
 - order_id - INTEGER - foreign key som är kopplad till Orders.order_id
-- product_id - INTEGER - produktens id, kommer från productsAPI
-- amount - INTEGER - antal produkter
-
-Products table: (denna information kommer från productsAPI, men sparas också i vår egen DB)
-- product_id - INTEGER - produktens unika id
-- name - VARCHAR - namnet på produkten
-- price - DECIMAL - produktens pris
+- product_id - INTEGER - produktens id, kommer från cartAPI?
+- amount - INTEGER - antal produkter, kommer från cartAPI?
+- product_price - NUMERIC - produktens pris, kommer från cartAPI?
+- product_price - STRING - produktens namn, kommer från cartAPI?

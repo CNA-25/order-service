@@ -22,7 +22,7 @@ router.get("/orders/:user_id", async (req, res) => { // URL t.ex /orders/101
     // Om allt ok, returnerar orders
     res.status(200).json(orders);
     console.log(orders);
-  } catch (err) { // Om någonting misslyckas, returnera error 500
+  } catch (err) { // Om någonting misslyckas, returnera error kod 500
     console.error("Error fetching orders:", err);
     res.status(500).json({ msg: "Internal server error" });
   }
@@ -66,7 +66,5 @@ router.get("/orders", async (req, res) => {
     res.status(500).json({ error: "Hämtningen misslyckades", message: error.message });
   }
 });
-
-
 
 module.exports = router;
