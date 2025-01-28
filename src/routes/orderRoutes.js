@@ -64,7 +64,7 @@ router.post("/orders", async (req, res) => {
     // Skapa beställningen
     const newOrder = await prisma.orders.create({
       data: {
-        user_id: userId,
+        userId: userId,
         orderPrice: parseFloat(orderPrice),
         orderItems: {
           create: orderItems.map((item) => ({
