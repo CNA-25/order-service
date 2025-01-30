@@ -1,5 +1,14 @@
 # order-service
 
+## What this service does
+- När en user klickar "beställ" på Store frontend, skickar Store en POST till Orders
+- En ny Order skapas i vår databas med en success response
+- Själva Order:n hämtas från Cart, till vilken vi skickar en GET request
+- Order produkternas pris fås även från cart
+- Möjligen skickas en GET request till Products för att hämta information om produkterna
+- Produkt mängden i Inventory uppdateras på det sätt de bestämmer
+- En POST skickas också till Email och Invoicing för att skicka till användaren, när en Order skapats
+
 ## How to use
 1. Clone the project git clone https://github.com/CNA-25/order-service.git
 2. Make sure Node.js is installed with npm -v, if not, install it
