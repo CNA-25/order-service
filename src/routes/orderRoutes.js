@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../config/prisma");
 
+import { getCartData } from './cartRoutes.js';
+
 // Hämta alla beställningar
 router.get("/orders", async (req, res) => {
   try {
@@ -15,18 +17,28 @@ router.get("/orders", async (req, res) => {
   }
 });
 
-// GET beställningar från vår DB som hör till en viss user_id. Return data or not found
-// Uppgift 1 i README.
+/**
+ * Hämtar alla ordrar för en specifik användare.
+ * 
+ * Args:
+ *  - user_id (int): Unikt user_id som hämtas från URL-parametern
+ * 
+ * Returns:
+ *  - (Array | Object): En lista med ordrar inklusive orderdetaljer om de finns
+ *  - (Object): Ett felmeddelande om inga ordrar hittas eller om ett serverfel uppstår
+ * 
+ * Exempel:
+ *  - GET /orders/101
+ *  - Response: [{ orderId: 1, userId: 101, orderPrice: 299.99, orderItems: [...] }, ...]
+ */
 router.get("/orders/:user_id", async (req, res) => {
-  // URL t.ex /orders/101
   const { user_id } = req.params; // Hämtar user_id från URLen
 
   try {
     const orders = await prisma.orders.findMany({
       // Hittar alla orders som hör till denna user_id
       where: { userId: parseInt(user_id) },
-      include: {
-        // Inkluderar orderItems
+      include: { // Inkluderar orderItems
         orderItems: true,
       },
     });
@@ -40,7 +52,6 @@ router.get("/orders/:user_id", async (req, res) => {
 
     // Om allt ok, returnerar orders
     res.status(200).json(orders);
-    console.log(orders);
   } catch (err) { // Om någonting misslyckas, returnera error kod 500
     console.error("Error fetching orders:", err);
     res.status(500).json({ msg: "Internal server error" });
