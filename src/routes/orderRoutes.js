@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../config/prisma");
 
-import { getCartData } from './cartRoutes.js';
+import { getCartData } from '../middleware/cart.js';
 
 // Hämta alla beställningar
 router.get("/orders", async (req, res) => {
