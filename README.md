@@ -44,7 +44,7 @@ Orders table:
 Order_items table:
 - order_item_id - INTEGER (behövs denna?)
 - order_id - INTEGER - foreign key som är kopplad till Orders.order_id
-- product_id - INTEGER - produktens id, kommer från cartAPI?
+- product_id - VARCHAR (123-ABC) - produktens id, kommer från cartAPI?
 - amount - INTEGER - antal produkter, kommer från cartAPI?
 - product_price - NUMERIC - produktens pris, kommer från cartAPI?
 - product_price - STRING - produktens namn, kommer från cartAPI?
