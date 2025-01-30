@@ -4,11 +4,9 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-
-console.log(`Node.js ${process.version}`);
-
 app.use(express.json());
 
+//const authenticateToken = require("./middleware/authMiddleware");
 const orderRoutes = require("./routes/orderRoutes");
 app.use("/api", orderRoutes);
 
