@@ -14,20 +14,20 @@
  */
 export async function getCartData(userId, token) { // userId och token kommer från JWT via front-end till vår /orders POST
     try {
-        const reponse = await fetch(`https://cart-service-git-cart-service.2.rahtiapp.fi/cart/${userId}`, {
+        const response = await fetch(`https://cart-service-git-cart-service.2.rahtiapp.fi/cart/${userId}`, {
             method: "GET",
             headers: {
                 'token': token // Kommer från JWT token
             }
         });
 
-        if (!reponse.ok) { // Om fetchen misslyckas
+        if (!response.ok) { // Om fetchen misslyckas
             console.error('Failed to fetch cart data');
             return null;
         }
 
         // Får cartData i JSON format
-        const cartData = await reponse.json();
+        const cartData = await response.json();
 
         // Kollar att cartData existerar och inte är tom
         if (!cartData || !cartData.cart || cartData.cart.length === 0) {

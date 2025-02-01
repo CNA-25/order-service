@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../config/prisma");
 
-import { getCartData } from '../middleware/cart.js';
+const { getCartData } = require("../middleware/cart");
 
-// Hämta alla beställningar
+// Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
 router.get("/orders", async (req, res) => {
   try {
     const orders = await prisma.orders.findMany();
@@ -58,30 +58,45 @@ router.get("/orders/:user_id", async (req, res) => {
   }
 });
 
-// Skapa en ny beställning
+// Skapa en ny order
 router.post("/orders", async (req, res) => {
-  const { userId, orderPrice, orderItems } = req.body;
+  const { userId, token } = req.body;
 
-  // Kontrollera att alla fält är ifyllda
-  if (!userId || !orderPrice || !Array.isArray(orderItems) || orderItems.length === 0) {
+  // Kolla att userId och token finns
+  if (!userId || !token) {
     return res.status(400).json({
       error: "Saknade fält",
-      message: "userId, orderPrice och orderItems krävs",
+      message: "userId och token krävs",
     });
   }
 
   try {
-    // Skapa beställningen
+    // Hämta användarens kundvagn
+    const cartData = await getCartData(userId, token);
+
+    // Returnera error om cartData är tom
+    if (!cartData) {
+      return res.status(400).json({
+        error: "Tom kundvagn",
+        message: "Kundvagnen är tom eller felaktig",
+      });
+    }
+
+    // Räkna ut totalpriset för ordern
+    const orderPrice = cartData.cart.reduce((sum, item) => sum + item.total_price, 0);
+
+    // Skapa en ny order i db:n
     const newOrder = await prisma.orders.create({
       data: {
         userId: userId,
-        orderPrice: parseFloat(orderPrice),
+        orderPrice: orderPrice, 
         orderItems: {
-          create: orderItems.map((item) => ({
+          create: cartData.cart.map((item) => ({
             product_id: item.product_id,
-            amount: item.amount,
-            product_price: parseFloat(item.product_price),
+            amount: item.quantity,
+            product_price: item.price,
             product_name: item.product_name,
+            total_price: item.total_price, // Oklart om vi ska hämta eller räkna ut detta
           })),
         },
       },
@@ -89,14 +104,16 @@ router.post("/orders", async (req, res) => {
         orderItems: true,
       },
     });
+
     // Returnera success
     res.status(201).json({
-      message: "Beställning skapad",
+      message: "Order skapad",
       order: newOrder,
     });
-    // Returnera error
   } catch (error) {
     console.error("Misslyckades med att skapa beställning:", error);
+
+    // Returnera error
     res.status(500).json({
       error: "Misslyckades med att skapa beställning",
       message: error.message,
