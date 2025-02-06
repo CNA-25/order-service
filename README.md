@@ -14,6 +14,40 @@
 2. Make sure Node.js is installed with npm -v, if not, install it
 3. Install dependencies with npm install
 
+## Endpoint guide
+1. GET /orders/:user_id
+
+### Denna endpoint hämtar alla ordrar för en specifik användare, inklusive orderdetaljer
+
+### Parametrar
+| Parameter | Typ | Beskrivning       | 
+| --------- | --- | ----------------- |
+| user_id   | int | Unikt användar-ID |
+
+### Svar
+| Statuskod                 | Beskrivning                                            | 
+| ------------------------- | ------------------------------------------------------ |
+| 200 OK                    | Returnerar en lista med ordrar inklusive orderdetaljer |
+| 404 Not Found             | Om inga ordrar hittas för användaren                   |
+| 500 Internal Server Error | Om ett serverfel uppstår                               |
+
+2. POST /orders
+
+### Denna endpoint skapar en ny order baserat på användarens kundvagn
+
+### Request Body
+| Parameter | Typ    | Beskrivning       | 
+| --------- | ------ | ----------------- |
+| userId    | int    | Unikt användar-ID |
+| userId    | string | JWT-token         |
+
+### Svar
+| Statuskod                 | Beskrivning                                        | 
+| ------------------------- | -------------------------------------------------- |
+| 201 Created               | Ordern har skapats och returneras i svaret         |
+| 400 Bad Request           | Om userId, token saknas eller om kundvagnen är tom |
+| 500 Internal Server Error | Om ett serverfel uppstår                           |
+
 ## To-do lista:
 Order Service
 
