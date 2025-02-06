@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../config/prisma");
 
-const { getCartData } = require("../middleware/cart");
+// Importera middleware
+const getCartData = require('../middleware/cart.js'); 
+const checkInventory = require('../middleware/inventory.js');
 
 // Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
 router.get("/orders", async (req, res) => {
@@ -59,39 +61,21 @@ router.get("/orders/:user_id", async (req, res) => {
 });
 
 // Skapa en ny order
-router.post("/orders", async (req, res) => {
-  const { userId, token } = req.body;
-
-  // Kolla att userId och token finns
-  if (!userId || !token) {
-    return res.status(400).json({
-      error: "Saknade fält",
-      message: "userId och token krävs",
-    });
-  }
+router.post("/orders", getCartData, checkInventory, async (req, res) => {
+  const { userId } = req.body; // Hämtar userId från request body
+  const cartData = req.cartData; // Hämtar cartData från middleware
 
   try {
-    // Hämta användarens kundvagn
-    const cartData = await getCartData(userId, token);
-
-    // Returnera error om cartData är tom
-    if (!cartData) {
-      return res.status(400).json({
-        error: "Tom kundvagn",
-        message: "Kundvagnen är tom eller felaktig",
-      });
-    }
-
-    // Räkna ut totalpriset för ordern
+    // Beräkna totalpriset för ordern
     const orderPrice = cartData.cart.reduce((sum, item) => sum + item.total_price, 0);
 
-    // Skapa en ny order i db:n
+    // Skapa order i databasen
     const newOrder = await prisma.orders.create({
       data: {
         userId: userId,
-        orderPrice: orderPrice, 
+        orderPrice: orderPrice,
         orderItems: {
-          create: cartData.cart.map((item) => ({
+          create: cartData.cart.map(item => ({
             product_id: item.product_id,
             amount: item.quantity,
             product_price: item.price,
@@ -111,11 +95,9 @@ router.post("/orders", async (req, res) => {
       order: newOrder,
     });
   } catch (error) {
-    console.error("Misslyckades med att skapa beställning:", error);
-
     // Returnera error
     res.status(500).json({
-      error: "Misslyckades med att skapa beställning",
+      error: "Misslyckades att skapa order",
       message: error.message,
     });
   }
