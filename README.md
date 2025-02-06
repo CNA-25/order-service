@@ -15,7 +15,7 @@
 3. Install dependencies with npm install
 
 ## Endpoint guide
-1. GET /orders/:user_id
+### GET /orders/:user_id
 
 ### Denna endpoint hämtar alla ordrar för en specifik användare, inklusive orderdetaljer
 
@@ -31,7 +31,8 @@
 | 404 Not Found             | Om inga ordrar hittas för användaren                   |
 | 500 Internal Server Error | Om ett serverfel uppstår                               |
 
-2. POST /orders
+
+### POST /orders
 
 ### Denna endpoint skapar en ny order baserat på användarens kundvagn
 
@@ -39,7 +40,7 @@
 | Parameter | Typ    | Beskrivning       | 
 | --------- | ------ | ----------------- |
 | userId    | int    | Unikt användar-ID |
-| userId    | string | JWT-token         |
+| token     | string | JWT-token         |
 
 ### Svar
 | Statuskod                 | Beskrivning                                        | 
