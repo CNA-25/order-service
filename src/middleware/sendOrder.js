@@ -19,7 +19,7 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 // Skicka ordern till fakturering / invoicing
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
-export async function sendOrder(data) {
+async function sendOrder(data) {
     
     // the data to send
     /* const data = {
