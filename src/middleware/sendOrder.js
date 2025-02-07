@@ -30,7 +30,7 @@ async function sendOrder(newOrder) {
             timestamp: timestamp,           // Use the timestamp from the `newOrder` object
             order_price: orderPrice,        // Total price of the order
             order_id: orderId,              // Order ID from the database
-            order_item_id: item.id,         // Order item ID (from Prisma)
+            order_item_id: item.order_item_id, // Order item ID (from Prisma)
             product_id: item.product_id,    // Product ID (from Prisma)
             amount: item.amount,            // Amount (from Prisma)
             product_price: item.product_price, // Price for each product (from Prisma)
