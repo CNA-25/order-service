@@ -22,17 +22,17 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 async function sendOrder(data) {
     
     // the data to send
-    /* const data = {
+    const data = {
         user_id: 42,
-        timestamp: "2026-01-01T12:00:00",
         order_price: 420,
-        order_id: 43,
-        order_item_id: 2,
-        product_id: 2,
-        amount: 55,
-        product_price: 99.99,
-        product_name: "Order-Test-Beer"
-    }; */
+        orderItemS: {
+            product_id: 2,
+            amount: 55,
+            product_price: 99.99,
+            product_name: "Order-Test-Beer",
+            total_price: 456
+        }
+    };
 
     try {
         // Send to invoicing
@@ -75,8 +75,8 @@ async function sendOrder(data) {
         // If successful, parse the response as JSON
         const responseDataInvoice = await resInvoice.json();
         console.log(responseDataInvoice);
-/*         const responseDataEmail = await resEmail.json();
- */
+        //const responseDataEmail = await resEmail.json();
+
         // Return the server's responses
         return {responseDataInvoice/* , responseDataEmail */};
 
