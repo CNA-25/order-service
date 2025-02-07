@@ -46,6 +46,7 @@ export async function sendOrder(data) {
             // Convert the data object into JSON
             body: JSON.stringify(data)
         });
+        console.log(resInvoice);
 
         // Check if the INVOICE is OK (status code 200-299)
         if (!resInvoice.ok) {
@@ -73,6 +74,7 @@ export async function sendOrder(data) {
 
         // If successful, parse the response as JSON
         const responseDataInvoice = await resInvoice.json();
+        console.log(responseDataInvoice);
 /*         const responseDataEmail = await resEmail.json();
  */
         // Return the server's responses
