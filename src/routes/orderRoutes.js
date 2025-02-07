@@ -90,19 +90,18 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       },
     });
 
+    // Send the new order to invoice and email
+    const orderSent = await sendOrder(newOrder); 
+    console.log(orderSent);
+    if (!orderSent) {
+      throw new Error("Kunde inte skicka beställningen vidare.");
+    }
+
     // Returnera success
     res.status(201).json({
       message: "Order skapad",
       order: newOrder,
     });
-
-    // Send the new order to invoice and email
-    const orderSent = await sendOrder(newOrder); 
-    if (!orderSent) {
-      throw new Error("Kunde inte skicka beställningen vidare.");
-    }
-
-
   } catch (error) {
     // Returnera error
     res.status(500).json({
