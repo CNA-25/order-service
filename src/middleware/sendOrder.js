@@ -25,6 +25,7 @@ async function sendOrder(newOrder) {
 
     try {
         // Format the shipment data to match the expected structure
+        // LIKELY TODO
         const shipmentData = orderItems.map(item => ({
             user_id: userId,               // Same as `userId` in the order
             timestamp: timestamp,           // Use the timestamp from the `newOrder` object
