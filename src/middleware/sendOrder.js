@@ -85,3 +85,5 @@ export async function sendOrder(data) {
         return null;
     }
 }
+
+module.exports = sendOrder;
