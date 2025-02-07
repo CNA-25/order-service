@@ -98,6 +98,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
 
     // Send the new order to invoice and email
     const orderSent = await sendOrder(newOrder); 
+    console.log(orderSent);
     if (!orderSent) {
       throw new Error("Kunde inte skicka beställningen vidare.");
     }
