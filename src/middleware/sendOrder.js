@@ -55,7 +55,7 @@ export async function sendOrder(data) {
 
         // Send to email
         // Sending the POST request using async/await
-        const resEmail = await fetch(INVOICING_SERVICE_URL, {
+        /* const resEmail = await fetch(INVOICING_SERVICE_URL, {
             method: 'POST', // We're sending data to the server
             headers: {
                 // Tells the server that we are sending JSON
@@ -63,20 +63,20 @@ export async function sendOrder(data) {
             },
             // Convert the data object into JSON
             body: JSON.stringify(data)
-        });
+        }); */
 
         // Check if the EMAIL is OK (status code 200-299)
-        if (!resEmail.ok) {
+        /* if (!resEmail.ok) {
             console.error('Failed to send order data');
             return null;
-        }
+        } */
 
         // If successful, parse the response as JSON
         const responseDataInvoice = await resInvoice.json();
-        const responseDataEmail = await resEmail.json();
-
+/*         const responseDataEmail = await resEmail.json();
+ */
         // Return the server's responses
-        return {responseDataInvoice, responseDataEmail};
+        return {responseDataInvoice/* , responseDataEmail */};
 
     } catch (error) {
         console.error('Error sending order data:', error);
