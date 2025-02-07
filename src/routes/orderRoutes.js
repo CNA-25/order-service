@@ -5,6 +5,7 @@ const prisma = require("../config/prisma");
 // Importera middleware
 const getCartData = require('../middleware/cart.js'); 
 const checkInventory = require('../middleware/inventory.js');
+import { sendOrder } from "../middleware/sendOrder.js";
 
 // Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
 router.get("/orders", async (req, res) => {
