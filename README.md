@@ -39,7 +39,7 @@
 ### Request Body
 | Parameter | Typ    | Beskrivning       | 
 | --------- | ------ | ----------------- |
-| userId    | int    | Unikt användar-ID |
+| user_id    | int    | Unikt användar-ID |
 | token     | string | JWT-token         |
 
 ### Svar
@@ -57,7 +57,7 @@ GET -> user_id, lista med information om beställningen (order_items, products)
 Respons = data eller not found
 
 2.	Skapa beställning för en viss userId med de produkter som finns i dens köpkorg och spara i vår DB
-POST -> user_id, lista med information om produkter (productId)
+POST -> user_id, lista med information om produkter (product_id)
 Respons = success eller fail
 
 3.	/cartAPI
@@ -73,7 +73,7 @@ POST? information om userId med dens beställning -> skapar en faktura
 GET information om produkterna ur produktregistret (ännu oklart om detta behövs)
 
 7.	/inventoryAPI
-PATCH? att minska productId saldo från lagret
+POST att minska productId saldo från lagret
 
 + error handling
 
@@ -83,12 +83,12 @@ Orders table:
 - order_id - SERIAL & auto-increment, primary key
 - user_id - INTEGER - den inloggades användarens unika id
 - timestamp - TIMESTAMP - när beställningen gjordes
-- order_price - NUMERIC - totala priset för hela beställningen (amount * price)
+- order_price - NUMERIC - totala priset för hela beställningen (quantity * product_price)
 
 Order_items table:
 - order_item_id - INTEGER (behövs denna?)
 - order_id - INTEGER - foreign key som är kopplad till Orders.order_id
 - product_id - VARCHAR (123-ABC) - produktens id, kommer från cartAPI?
-- amount - INTEGER - antal produkter, kommer från cartAPI?
+- quantity - INTEGER - antal produkter, kommer från cartAPI?
 - product_price - NUMERIC - produktens pris, kommer från cartAPI?
-- product_price - STRING - produktens namn, kommer från cartAPI?
+- product_name - STRING - produktens namn, kommer från cartAPI?

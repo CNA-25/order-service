@@ -7,15 +7,55 @@ const getCartData = require('../middleware/cart.js');
 const checkInventory = require('../middleware/inventory.js');
 const sendOrder = require("../middleware/sendOrder.js");
 
-// Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
+/**
+ * @swagger
+ * /orders:
+ *   get:
+ *     summary: Retrieve all orders
+ *     description: Fetches all orders from the database.
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved orders.
+ *         content:
+ *           application/json:
+ *             example:
+ *               - order_id: 1
+ *                 user_id: 101
+ *                 order_price: 299.99
+ *                 order_items:
+ *                   - product_id: 1
+ *                     product_name: "Hantverksöl IPA"
+ *                     quantity: 2
+ *                     product_price: 149.99
+ *                     total_price: 299.98
+ *               - order_id: 2
+ *                 user_id: 102
+ *                 order_price: 199.99
+ *                 order_items:
+ *                   - product_id: 2
+ *                     product_name: "Lageröl"
+ *                     quantity: 1
+ *                     product_price: 199.99
+ *                     total_price: 199.99
+ *       404:
+ *         description: No orders found.
+ *       500:
+ *         description: Server error.
+ */
 router.get("/orders", async (req, res) => {
   try {
-    const orders = await prisma.orders.findMany();
-    res.status(200).json(orders);
+    const orders = await prisma.orders.findMany({
+      include: {
+        order_items: true,
+      },
+    });
 
     if (orders.length === 0) {
       return res.status(404).json({ error: "Inga ordrar hittades" });
     }
+
+    res.status(200).json(orders);
   } catch (error) {
     console.error(error);
     res
@@ -37,6 +77,46 @@ router.get("/orders", async (req, res) => {
  * Exempel:
  *  - GET /orders/101
  *  - Response: [{ order_id: 1, user_id: 101, order_price: 299.99, order_items: [...] }, ...]
+ */
+
+/**
+ * @swagger
+ * /orders/{user_id}:
+ *   get:
+ *     summary: Get orders for a specific user
+ *     description: Fetches all orders related to a given user ID.
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The user ID to fetch orders for.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved orders.
+ *         content:
+ *           application/json:
+ *             example:
+ *               - order_id: 1
+ *                 user_id: 101
+ *                 order_price: 499.98
+ *                 order_items:
+ *                   - product_id: 1
+ *                     product_name: "Hantverksöl IPA"
+ *                     quantity: 2
+ *                     product_price: 149.99
+ *                     total_price: 299.98
+ *                   - product_id: 2
+ *                     product_name: "Lageröl"
+ *                     quantity: 1
+ *                     product_price: 199.99
+ *                     total_price: 199.99
+ *       404:
+ *         description: No orders found for the given user.
+ *       500:
+ *         description: Internal server error.
  */
 router.get("/orders/:user_id", async (req, res) => {
   const { user_id } = req.params; // Hämtar user_id från URLen
@@ -65,7 +145,109 @@ router.get("/orders/:user_id", async (req, res) => {
   }
 });
 
-// Skapa en ny order
+/**
+ * @swagger
+ * /orders:
+ *   post:
+ *     summary: Create a new order
+ *     description: Fetches cart data, checks inventory, and creates an order.
+ *     operationId: createOrder
+ *     tags:
+ *       - Orders
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *               - token
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 example: 1
+ *               token:
+ *                 type: string
+ *                 example: "jwt-token-here"
+ *     responses:
+ *       201:
+ *         description: Order created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Order created successfully"
+ *                 order:
+ *                   type: object
+ *                   properties:
+ *                     order_id:
+ *                       type: integer
+ *                       example: 12345
+ *                     user_id:
+ *                       type: integer
+ *                       example: 3
+ *                     order_price:
+ *                       type: number
+ *                       format: float
+ *                       example: 199.99
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-02-10T14:30:00Z"
+ *                     order_items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           product_id:
+ *                             type: integer
+ *                             example: 101
+ *                           product_name:
+ *                             type: string
+ *                             example: "Craft Beer 500ml"
+ *                           quantity:
+ *                             type: integer
+ *                             example: 2
+ *                           product_price:
+ *                             type: number
+ *                             format: float
+ *                             example: 49.99
+ *                           total_price:
+ *                             type: number
+ *                             format: float
+ *                             example: 99.98
+ *       400:
+ *         description: Missing user_id or token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing user_id or token"
+ *                 message:
+ *                   type: string
+ *                   example: "Both user_id and token are required."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create order"
+ *                 message:
+ *                   type: string
+ *                   example: "An unexpected error occurred while creating the order"
+ */
+
 router.post("/orders", getCartData, checkInventory, async (req, res) => {
   const { user_id } = req.body; // Hämtar userId från request body
   const cartData = req.cartData; // Hämtar cartData från middleware
@@ -92,7 +274,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       include: { order_items: true },
     });
 
-  
+
 
     /* Send the new order to invoice and email
 

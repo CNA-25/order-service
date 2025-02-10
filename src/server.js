@@ -1,8 +1,10 @@
 const express = require("express");
+const setupSwagger = require('./config/swagger');
 const prisma = require("./config/prisma");
 require("dotenv").config();
 
 const app = express();
+setupSwagger(app);
 const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
@@ -35,6 +37,7 @@ app.get("/", async (req, res) => {
 app.listen(PORT, () => {
     try {
         console.log(`Running on http://localhost:${PORT}`);
+        console.log('Swagger docs available at http://localhost:8080/api/docs');
     } catch (error) {
         console.log(error.message);
     }

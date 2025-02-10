@@ -21,7 +21,7 @@ const getCartData = async (req, res, next) => {
     if (!user_id || !token) {
         return res.status(400).json({
             error: "Saknar user_id och token",
-            message: "userId och token krävs för att hämta kundvagnsdata",
+            message: "user_id och token krävs för att hämta kundvagnsdata",
         });
     }
 
