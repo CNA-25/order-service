@@ -5,7 +5,7 @@ const prisma = require("../config/prisma");
 // Importera middlewares
 const getCartData = require('../middleware/cart.js');
 const checkInventory = require('../middleware/inventory.js');
-const sendOrder = require("../services/sendOrder.js");
+const sendOrder = require("../middleware/sendOrder.js");
 
 // Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
 router.get("/orders", async (req, res) => {
@@ -101,7 +101,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
     if (!orderSent) {
       throw new Error("Kunde inte skicka beställningen vidare.");
     }
-      
+
     */
 
     // Returnera success
