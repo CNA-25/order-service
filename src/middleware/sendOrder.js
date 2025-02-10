@@ -3,7 +3,7 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 // invoicingAPI POST med information om user_id och dens beställning
 // todo viktor, in progress
 
-// https://invoicing-service-git-invoicing-service.2.rahtiapp.fi/shipments
+// Exempel på data som skickas till fakturering
 /* {
 "user_id": 2,
 "timestamp": "2025-01-01T12:00:00",
@@ -20,22 +20,23 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
 async function sendOrder(newOrder) {
+    const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
-    const { userId, orderPrice, orderId, orderItems, timestamp } = newOrder;
 
     try {
-        // Format the shipment data to match the expected structure
-        const shipmentData = orderItems.map(item => ({
-            user_id: userId,               // Same as `userId` in the order
-            timestamp: timestamp,           // Use the timestamp from the `newOrder` object
-            order_price: orderPrice,        // Total price of the order
-            order_id: orderId,              // Order ID from the database
-            order_item_id: item.order_item_id, // Order item ID (from Prisma)
-            product_id: item.product_id,    // Product ID (from Prisma)
-            amount: item.amount,            // Amount (from Prisma)
-            product_price: item.product_price, // Price for each product (from Prisma)
-            product_name: item.product_name,  // Product name (from Prisma)
-        }));
+        const shipmentData = {
+            user_id,            
+            timestamp,         
+            order_price,      
+            order_id,             
+            items: order_items.map(item => ({
+                order_item_id: item.order_item_id,
+                product_id: item.product_id,
+                amount: item.quantity,
+                product_price: item.product_price,
+                product_name: item.product_name
+            }))
+        };
 
         console.log('newOrder: ', newOrder);
         console.log('shipmentData: ', shipmentData)

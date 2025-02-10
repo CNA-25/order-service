@@ -2,16 +2,20 @@ const express = require("express");
 const router = express.Router();
 const prisma = require("../config/prisma");
 
-// Importera middleware
-const getCartData = require('../middleware/cart.js'); 
+// Importera middlewares
+const getCartData = require('../middleware/cart.js');
 const checkInventory = require('../middleware/inventory.js');
-const sendOrder = require('../middleware/sendOrder.js')
+const sendOrder = require("../services/sendOrder.js");
 
 // Hämta alla beställningar (oklart om detta behövs, admin eventuellt?)
 router.get("/orders", async (req, res) => {
   try {
     const orders = await prisma.orders.findMany();
     res.status(200).json(orders);
+
+    if (orders.length === 0) {
+      return res.status(404).json({ error: "Inga ordrar hittades" });
+    }
   } catch (error) {
     console.error(error);
     res
@@ -32,7 +36,7 @@ router.get("/orders", async (req, res) => {
  * 
  * Exempel:
  *  - GET /orders/101
- *  - Response: [{ orderId: 1, userId: 101, orderPrice: 299.99, orderItems: [...] }, ...]
+ *  - Response: [{ order_id: 1, user_id: 101, order_price: 299.99, order_items: [...] }, ...]
  */
 router.get("/orders/:user_id", async (req, res) => {
   const { user_id } = req.params; // Hämtar user_id från URLen
@@ -40,9 +44,9 @@ router.get("/orders/:user_id", async (req, res) => {
   try {
     const orders = await prisma.orders.findMany({
       // Hittar alla orders som hör till denna user_id
-      where: { userId: parseInt(user_id) },
+      where: { user_id: parseInt(user_id) },
       include: { // Inkluderar orderItems
-        orderItems: true,
+        order_items: true,
       },
     });
 
@@ -63,39 +67,42 @@ router.get("/orders/:user_id", async (req, res) => {
 
 // Skapa en ny order
 router.post("/orders", getCartData, checkInventory, async (req, res) => {
-  const { userId } = req.body; // Hämtar userId från request body
+  const { user_id } = req.body; // Hämtar userId från request body
   const cartData = req.cartData; // Hämtar cartData från middleware
 
   try {
     // Beräkna totalpriset för ordern
-    const orderPrice = cartData.cart.reduce((sum, item) => sum + item.total_price, 0);
+    const order_price = cartData.cart.reduce((sum, item) => sum + item.total_price, 0);
 
     // Skapa order i databasen
     const newOrder = await prisma.orders.create({
       data: {
-        userId: userId,
-        orderPrice: orderPrice,
-        orderItems: {
+        user_id,
+        order_price,
+        order_items: {
           create: cartData.cart.map(item => ({
             product_id: item.product_id,
-            amount: item.quantity,
+            quantity: item.quantity,
             product_price: item.price,
             product_name: item.product_name,
-            total_price: item.total_price, // Oklart om vi ska hämta eller räkna ut detta
+            total_price: item.total_price,
           })),
         },
       },
-      include: {
-        orderItems: true,
-      },
+      include: { order_items: true },
     });
 
-    // Send the new order to invoice and email
-    const orderSent = await sendOrder(newOrder); 
+  
+
+    /* Send the new order to invoice and email
+
+    const orderSent = await sendOrder(newOrder);
     console.log(orderSent);
     if (!orderSent) {
       throw new Error("Kunde inte skicka beställningen vidare.");
     }
+      
+    */
 
     // Returnera success
     res.status(201).json({
