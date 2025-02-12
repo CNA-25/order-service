@@ -22,11 +22,14 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 async function sendOrder(newOrder) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
+    // Get current timestamp
+    //const timestamp = new Date();
+
     try {
         const shipmentData = {
             //user_id: newOrder.user_id,
             user_id,          
-            timestamp,        
+            //timestamp,        
             order_price,      
             order_id,         
             items: order_items.map(item => ({

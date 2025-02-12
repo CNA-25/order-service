@@ -3,13 +3,12 @@ POST https://invoicing-service-git-invoicing-service.2.rahtiapp.fi/orders
 Content-Type: application/json
 
 {
-  "order_id": 1,
   "user_id": 3,
   "timestamp": "2025-02-07T15:27:40.353000",
   "order_price": 45.33,
+  "order_id": 3,
   "order_items": [
     {
-      "order_item_id": 1,
       "amount": 1,
       "product_id": 1,
       "product_name": "Golden Ale",
