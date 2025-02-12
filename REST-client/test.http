@@ -6,7 +6,6 @@ Content-Type: application/json
   "user_id": 3,
   "timestamp": "2025-02-07T15:27:40.353000",
   "order_price": 45.33,
-  "order_id": 3,
   "order_items": [
     {
       "amount": 1,

@@ -29,9 +29,9 @@ async function sendOrder(newOrder) {
         const shipmentData = {
             //user_id: newOrder.user_id,
             user_id,          
-            //timestamp,        
+            timestamp,        
             order_price,      
-            order_id,         
+            //order_id,         
             items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
                 product_id: item.product_id,
