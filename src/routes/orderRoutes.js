@@ -9,9 +9,9 @@ const sendOrder = require("../middleware/sendOrder.js");
 
 /**
  * @swagger
- * /orders:
+ * /admin/orders:
  *   get:
- *     summary: Retrieve all orders
+ *     summary: Retrieve all orders (Admin access only)
  *     description: Fetches all orders from the database.
  *     tags: [Orders]
  *     parameters:
@@ -51,7 +51,13 @@ const sendOrder = require("../middleware/sendOrder.js");
  *         description: Server error.
  */
 
-router.get("/orders", async (req, res) => {
+router.get("/admin/orders", async (req, res) => {
+  const role = req.user.role;
+
+  if (role !== 'admin') {
+    return res.status(403).json({ msg: "Forbidden. Admins only." });
+  }
+
   try {
     const orders = await prisma.orders.findMany({
       include: {
@@ -89,19 +95,13 @@ router.get("/orders", async (req, res) => {
 
 /**
  * @swagger
- * /orders/{user_id}:
+ * /orders
  *   get:
  *     summary: Get orders for a specific user
  *     description: Fetches all orders related to a given user ID.
  *     operationId: getOrdersForUser
  *     tags: [Orders]
  *     parameters:
- *       - name: user_id
- *         in: path
- *         required: true
- *         schema:
- *           type: integer
- *         description: The user ID to fetch orders for.
  *       - name: token
  *         in: header
  *         required: true
@@ -133,8 +133,8 @@ router.get("/orders", async (req, res) => {
  *         description: Internal server error.
  */
 
-router.get("/orders/:user_id", async (req, res) => {
-  const { user_id } = req.params; // Hämtar user_id från URLen
+router.get("/orders", async (req, res) => {
+  const user_id = req.user.sub; // Hämtar user_id från JWTn
 
   try {
     const orders = await prisma.orders.findMany({
@@ -175,18 +175,6 @@ router.get("/orders/:user_id", async (req, res) => {
  *         description: The JWT token used for authentication. Required for order creation.
  *         required: true
  *         type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - user_id
- *             properties:
- *               user_id:
- *                 type: integer
- *                 example: 1
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -266,7 +254,7 @@ router.get("/orders/:user_id", async (req, res) => {
  */
 
 router.post("/orders", getCartData, checkInventory, async (req, res) => {
-  const { user_id } = req.body; // Hämtar userId från request body
+  const user_id = req.user.sub; // Hämtar user_id från req
   const cartData = req.cartData; // Hämtar cartData från middleware
 
   try {
@@ -291,14 +279,12 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       include: { order_items: true },
     });
 
-    /* Send the new order to invoice and email
-
+    /* Send the new order to invoice and email (fungerar inte atm)
     const orderSent = await sendOrder(newOrder);
     console.log(orderSent);
     if (!orderSent) {
       throw new Error("Kunde inte skicka beställningen vidare.");
     }
-
     */
 
     // Returnera success

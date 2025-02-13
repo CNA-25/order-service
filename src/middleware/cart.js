@@ -16,7 +16,7 @@ const CART_SERVICE_URL = process.env.CART_SERVICE_URL;
  */
 
 const getCartData = async (req, res, next) => {
-    const { user_id } = req.body; // userId och token kommer från JWT via front-end till vår /orders POST
+    const user_id = req.user.sub; // user_id kommer från JWTn
     const token = req.token; // Får token från middleware
 
     if (!user_id) {
