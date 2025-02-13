@@ -298,6 +298,65 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /delete/{order_id}:
+ *   delete:
+ *     summary: Delete an order
+ *     description: Deletes an order by its ID. Only accessible by admin users.
+ *     operationId: deleteOrder
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - name: order_id
+ *         in: path
+ *         description: The ID of the order to delete
+ *         required: true
+ *         type: integer
+ *     security:
+ *       - BearerAuth: []  # This tells Swagger that the request requires the Bearer token
+ *     responses:
+ *       200:
+ *         description: Successfully deleted order
+ *         schema:
+ *           type: object
+ *           properties:
+ *             msg:
+ *               type: string
+ *               example: "Successfully deleted order with ID: 123"
+ *       403:
+ *         description: Access denied. Admins only.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *               example: "Access denied. Admins only."
+ *       500:
+ *         description: Failed to delete order
+ *         schema:
+ *           type: object
+ *           properties:
+ *             error:
+ *               type: string
+ *               example: "Failed to delete order"
+ *             message:
+ *               type: string
+ *               example: "Detailed error message"
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT  # Specifies that the authentication is via a JWT token
+ *   security:
+ *     - BearerAuth: []  # This ensures the Bearer token is used for the entire API
+ */
+
 router.delete('/delete/:order_id', async (req, res) => {
   const { order_id } = req.params; // Hämtar order_id från URLen
 
