@@ -25,10 +25,13 @@ function authenticateToken(req, res, next) {
 
     try {
         const tokenWithBearer = `Bearer ${token}`;
+        console.log("Verifying token:", tokenWithBearer); // Log the token being used
         const decoded = jwt.verify(tokenWithBearer, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
+        console.log("Decoded token:", decoded); // Log the decoded token
         req.user = decoded; // Lägger till användardata i request-objektet
         next(); 
     } catch (err) {
+        console.error("Token verification error:", err); // Log error for debugging
         return res.status(403).json({ msg: "Ogiltig eller utgången token." });
     }
 }
