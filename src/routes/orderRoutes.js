@@ -16,6 +16,7 @@ const sendOrder = require("../middleware/sendOrder.js");
  *     tags: [Orders]
  *     parameters:
  *       - in: header
+ *         description: The JWT token used for authentication. Required to get orders.
  *         name: token
  *         required: true
  *         schema:
@@ -50,12 +51,11 @@ const sendOrder = require("../middleware/sendOrder.js");
  *       500:
  *         description: Server error.
  */
-
 router.get("/admin/orders", async (req, res) => {
   const role = req.user.role;
 
   if (role !== 'admin') {
-    return res.status(403).json({ msg: "Forbidden. Admins only." });
+    return res.status(403).json({ error: "Access denied. Admins only." });
   }
 
   try {
@@ -132,7 +132,6 @@ router.get("/admin/orders", async (req, res) => {
  *       500:
  *         description: Internal server error.
  */
-
 router.get("/orders", async (req, res) => {
   const user_id = req.user.sub; // Hämtar user_id från JWTn
 
@@ -305,7 +304,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
  * @swagger
  * /delete/{order_id}:
  *   delete:
- *     summary: Delete an order
+ *     summary: Delete an order (Admin access only)
  *     description: Deletes an order by its ID. Only accessible by admin users.
  *     operationId: deleteOrder
  *     tags:
@@ -351,11 +350,11 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
  *               example: "Detailed error message"
  */
 
-router.delete('/delete/:order_id', async (req, res) => {
+router.delete('/admin/delete/:order_id', async (req, res) => {
   const { order_id } = req.params; // Hämtar order_id från URLen
 
-   // Kollar om användaren är en admin via dens JWT token
-   if (req.user.role !== 'admin') {
+  // Kollar om användaren är en admin via dens JWT token
+  if (req.user.role !== 'admin') {
     return res.status(403).json({ error: "Access denied. Admins only." });
   }
 
@@ -364,8 +363,8 @@ router.delete('/delete/:order_id', async (req, res) => {
       where: { order_id: parseInt(order_id) }
     });
 
-    res.status(200).json( { msg: `Successfully deleted order with ID: ${order_id}` } );
-  } catch(error) {
+    res.status(200).json({ msg: `Successfully deleted order with ID: ${order_id}` });
+  } catch (error) {
     res.status(500).json({
       error: "Failed to delete order",
       message: error.message,
