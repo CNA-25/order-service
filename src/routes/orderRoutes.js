@@ -308,9 +308,8 @@ router.delete('/delete/:order_id', async (req, res) => {
 
   try {
     await prisma.orders.delete({
-      where: { id: parseInt(order_id) },
-      include: { order_items: true }
-  });
+      where: { order_id: parseInt(order_id) }
+    });
 
     res.status(200).json( { msg: `Successfully deleted order with ID: ${order_id}` } );
   } catch(error) {
