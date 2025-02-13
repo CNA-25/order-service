@@ -35,6 +35,10 @@ const getCartData = async (req, res, next) => {
             }
         });
 
+        console.log("RESPONSE: -------------------- ", response)
+        console.log("USER_ID: -------------------- ", user_id)
+        console.log("TOKEN: -------------------- ", token)
+
         // Får cartData i JSON format
         const cartData = await response.json();
 
