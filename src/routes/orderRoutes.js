@@ -274,8 +274,6 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       include: { order_items: true },
     });
 
-
-
     /* Send the new order to invoice and email
 
     const orderSent = await sendOrder(newOrder);
@@ -299,5 +297,28 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
     });
   }
 });
+
+router.delete('/delete/:order_id', async (req, res) => {
+  const { order_id } = req.params; // Hämtar order_id från URLen
+
+   // Kollar om användaren är en admin via dens JWT token
+   if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: "Access denied. Admins only." });
+  }
+
+  try {
+    await prisma.orders.delete({
+      where: { id: parseInt(order_id) },
+      include: { order_items: true }
+  });
+
+    res.status(200).json( { msg: `Successfully deleted order with ID: ${order_id}` } );
+  } catch(error) {
+    res.status(500).json({
+      error: "Failed to delete order",
+      message: error.message,
+    });
+  }
+})
 
 module.exports = router;
