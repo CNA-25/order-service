@@ -8,9 +8,9 @@ setupSwagger(app);
 const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
-//const authenticateToken = require("./middleware/authMiddleware");
+const authenticateToken = require("./middleware/authMiddleware");
 const orderRoutes = require("./routes/orderRoutes");
-app.use("/api", orderRoutes);
+app.use("/api", authenticateToken, orderRoutes);
 
 // Root endpoint med information om API status
 app.get("/", async (req, res) => {
