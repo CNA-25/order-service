@@ -95,7 +95,7 @@ router.get("/admin/orders", async (req, res) => {
 
 /**
  * @swagger
- * /orders
+ * /orders:
  *   get:
  *     summary: Get orders for a specific user
  *     description: Fetches all orders related to a given user ID.
@@ -302,7 +302,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
 
 /**
  * @swagger
- * /delete/{order_id}:
+ * /admin/delete/{order_id}:
  *   delete:
  *     summary: Delete an order (Admin access only)
  *     description: Deletes an order by its ID. Only accessible by admin users.
