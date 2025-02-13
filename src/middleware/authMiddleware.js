@@ -24,9 +24,8 @@ function authenticateToken(req, res, next) {
     }
 
     try {
-        const tokenWithBearer = `Bearer ${token}`;
-        console.log("Verifying token:", tokenWithBearer); // Log the token being used
-        const decoded = jwt.verify(tokenWithBearer, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
+        console.log("Verifying token:", token); // Log the token being used
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
         console.log("Decoded token:", decoded); // Log the decoded token
         req.user = decoded; // Lägger till användardata i request-objektet
         next(); 
