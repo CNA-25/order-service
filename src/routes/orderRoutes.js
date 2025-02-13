@@ -13,7 +13,15 @@ const sendOrder = require("../middleware/sendOrder.js");
  *   get:
  *     summary: Retrieve all orders
  *     description: Fetches all orders from the database.
+ *     operationId: getAllOrders
  *     tags: [Orders]
+ *     parameters:
+ *       - name: token
+ *         in: header
+ *         required: true
+ *         description: The JWT token used for authentication.
+ *         type: string
+ *         example: "Bearer your_jwt_token_here"
  *     responses:
  *       200:
  *         description: Successfully retrieved orders.
@@ -43,6 +51,7 @@ const sendOrder = require("../middleware/sendOrder.js");
  *       500:
  *         description: Server error.
  */
+
 router.get("/orders", async (req, res) => {
   try {
     const orders = await prisma.orders.findMany({
@@ -85,14 +94,21 @@ router.get("/orders", async (req, res) => {
  *   get:
  *     summary: Get orders for a specific user
  *     description: Fetches all orders related to a given user ID.
+ *     operationId: getOrdersForUser
  *     tags: [Orders]
  *     parameters:
- *       - in: path
- *         name: user_id
+ *       - name: user_id
+ *         in: path
  *         required: true
  *         schema:
  *           type: integer
  *         description: The user ID to fetch orders for.
+ *       - name: token
+ *         in: header
+ *         required: true
+ *         description: The JWT token used for authentication.
+ *         type: string
+ *         example: "Bearer your_jwt_token_here"
  *     responses:
  *       200:
  *         description: Successfully retrieved orders.
@@ -118,6 +134,7 @@ router.get("/orders", async (req, res) => {
  *       500:
  *         description: Internal server error.
  */
+
 router.get("/orders/:user_id", async (req, res) => {
   const { user_id } = req.params; // Hämtar user_id från URLen
 
@@ -154,6 +171,13 @@ router.get("/orders/:user_id", async (req, res) => {
  *     operationId: createOrder
  *     tags:
  *       - Orders
+ *     parameters:
+ *       - name: token
+ *         in: header
+ *         description: The JWT token used for authentication. Required for order creation.
+ *         required: true
+ *         type: string
+ *         example: "Bearer your_jwt_token_here"
  *     requestBody:
  *       required: true
  *       content:
@@ -162,14 +186,10 @@ router.get("/orders/:user_id", async (req, res) => {
  *             type: object
  *             required:
  *               - user_id
- *               - token
  *             properties:
  *               user_id:
  *                 type: integer
  *                 example: 1
- *               token:
- *                 type: string
- *                 example: "jwt-token-here"
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -313,8 +333,12 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
  *         description: The ID of the order to delete
  *         required: true
  *         type: integer
- *     security:
- *       - BearerAuth: []  # This tells Swagger that the request requires the Bearer token
+ *       - name: token
+ *         in: header
+ *         description: The JWT token used for authentication. Required for admin access.
+ *         required: true
+ *         type: string
+ *         example: "Bearer your_jwt_token_here"
  *     responses:
  *       200:
  *         description: Successfully deleted order
@@ -343,18 +367,6 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
  *             message:
  *               type: string
  *               example: "Detailed error message"
- */
-
-/**
- * @swagger
- * components:
- *   securitySchemes:
- *     BearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT  # Specifies that the authentication is via a JWT token
- *   security:
- *     - BearerAuth: []  # This ensures the Bearer token is used for the entire API
  */
 
 router.delete('/delete/:order_id', async (req, res) => {
