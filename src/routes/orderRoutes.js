@@ -13,15 +13,14 @@ const sendOrder = require("../middleware/sendOrder.js");
  *   get:
  *     summary: Retrieve all orders
  *     description: Fetches all orders from the database.
- *     operationId: getAllOrders
  *     tags: [Orders]
  *     parameters:
- *       - name: token
- *         in: header
+ *       - in: header
+ *         name: token
  *         required: true
- *         description: The JWT token used for authentication.
- *         type: string
- *         example: "Bearer your_jwt_token_here"
+ *         schema:
+ *           type: string
+ *           description: The JWT token for authentication.
  *     responses:
  *       200:
  *         description: Successfully retrieved orders.
@@ -108,7 +107,6 @@ router.get("/orders", async (req, res) => {
  *         required: true
  *         description: The JWT token used for authentication.
  *         type: string
- *         example: "Bearer your_jwt_token_here"
  *     responses:
  *       200:
  *         description: Successfully retrieved orders.
@@ -177,7 +175,6 @@ router.get("/orders/:user_id", async (req, res) => {
  *         description: The JWT token used for authentication. Required for order creation.
  *         required: true
  *         type: string
- *         example: "Bearer your_jwt_token_here"
  *     requestBody:
  *       required: true
  *       content:
@@ -338,7 +335,6 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
  *         description: The JWT token used for authentication. Required for admin access.
  *         required: true
  *         type: string
- *         example: "Bearer your_jwt_token_here"
  *     responses:
  *       200:
  *         description: Successfully deleted order

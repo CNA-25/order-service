@@ -17,14 +17,15 @@ const jwt = require('jsonwebtoken');
  *  - router.get("/orders/:user_id", authenticateToken, getOrders);
  */
 function authenticateToken(req, res, next) {
-    const token = req.headers["authorization"]; // Token skickas i Authorization-headern
+    const token = req.headers["token"]; // Token skickas i Authorization-headern
 
     if (!token) {
         return res.status(401).json({ msg: "Åtkomst nekad. Ingen token tillhandahållen." });
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
+        const tokenWithBearer = `Bearer ${token}`;
+        const decoded = jwt.verify(tokenWithBearer, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
         req.user = decoded; // Lägger till användardata i request-objektet
         next(); 
     } catch (err) {
