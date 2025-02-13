@@ -24,10 +24,9 @@ function authenticateToken(req, res, next) {
     }
 
     try {
-        console.log("Verifying token:", token); // Log the token being used
         const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
-        console.log("Decoded token:", decoded); // Log the decoded token
         req.user = decoded; // Lägger till användardata i request-objektet
+        req.token = token; // Lägger till token i request-objektet
         next(); 
     } catch (err) {
         console.error("Token verification error:", err); // Log error for debugging
