@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+const jwt = require('jsonwebtoken');
 
 /**
  * Middleware för att verifiera JWT-token och skydda API-endpoints.
@@ -16,7 +16,7 @@ import jwt from "jsonwebtoken";
  * Exempel på användning:
  *  - router.get("/orders/:user_id", authenticateToken, getOrders);
  */
-export function authenticateToken(req, res, next) {
+function authenticateToken(req, res, next) {
     const token = req.headers["authorization"]; // Token skickas i Authorization-headern
 
     if (!token) {
@@ -31,3 +31,5 @@ export function authenticateToken(req, res, next) {
         return res.status(403).json({ msg: "Ogiltig eller utgången token." });
     }
 }
+
+module.exports = authenticateToken;
