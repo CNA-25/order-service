@@ -86,7 +86,7 @@ Orders table:
 - order_price - NUMERIC - totala priset för hela beställningen (quantity * product_price)
 
 Order_items table:
-- order_item_id - INTEGER (behövs denna?)
+- order_item_id - INTEGER
 - order_id - INTEGER - foreign key som är kopplad till Orders.order_id
 - product_id - VARCHAR (123-ABC) - produktens id, kommer från cartAPI?
 - quantity - INTEGER - antal produkter, kommer från cartAPI?

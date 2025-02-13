@@ -1,0 +1,18 @@
+POST https://invoicing-service-git-invoicing-service.2.rahtiapp.fi/orders
+//{{$dotenv DOTENV_VARIABLE}}
+Content-Type: application/json
+
+{
+  "user_id": 3,
+  "timestamp": "2025-02-07T15:27:40.353000",
+  "order_price": 45.33,
+  "order_items": [
+    {
+      "amount": 1,
+      "product_id": 1,
+      "product_name": "Golden Ale",
+      "order_item_id": 1,
+      "product_price": 5.99
+    }
+  ]
+}
