@@ -14,9 +14,9 @@ async function sendOrder(newOrder) {
             timestamp,        
             order_price,      
             order_id,         
-            items: order_items.map(item => ({
+            order_items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
-                product_id: item.product_id,
+                product_id: Number(item.product_id), // BORDE VARA STRING! Men invoicing APIn kräver atm en INT
                 amount: item.quantity,
                 product_price: item.product_price,
                 product_name: item.product_name
