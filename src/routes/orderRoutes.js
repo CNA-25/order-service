@@ -253,7 +253,7 @@ router.get("/orders", async (req, res) => {
  */
 
 router.post("/orders", getCartData, checkInventory, async (req, res) => {
-  const user_id = req.user.sub; // Hämtar user_id från req
+  const user_id = parseInt(req.user.sub, 10); // Hämtar user_id från req (req.user.sub är en string men sparas som int i vår prisma)
   const cartData = req.cartData; // Hämtar cartData från middleware
 
   try {
