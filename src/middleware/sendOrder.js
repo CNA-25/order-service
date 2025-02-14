@@ -1,20 +1,6 @@
 const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 
 // invoicingAPI POST med information om user_id och dens beställning
-// todo viktor, in progress
-
-// Exempel på data som skickas till fakturering
-/* {
-"user_id": 2,
-"timestamp": "2025-01-01T12:00:00",
-"order_price": 199.99,
-"order_id": 2,
-"order_item_id": 2,
-"product_id": 2,
-"amount": 2,
-"product_price": 99.99,
-"product_name": "Mega Craft Beer XL"
-} */
 
 // Skicka ordern till fakturering / invoicing
 // Information om beställningen kommer från getCartData funktion
@@ -22,16 +8,12 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 async function sendOrder(newOrder) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
-    // Get current timestamp
-    //const timestamp = new Date();
-
     try {
         const shipmentData = {
-            //user_id: newOrder.user_id,
             user_id,          
             timestamp,        
             order_price,      
-            //order_id,         
+            order_id,         
             items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
                 product_id: item.product_id,
@@ -45,7 +27,6 @@ async function sendOrder(newOrder) {
         console.log('shipmentData: ', shipmentData)
 
         // Send to invoicing
-        // Sending the POST request using async/await
         const resInvoice = await fetch(INVOICING_SERVICE_URL, {
             method: 'POST', // We're sending data to the server
             headers: {
