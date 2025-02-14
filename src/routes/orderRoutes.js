@@ -164,7 +164,7 @@ router.get("/orders", async (req, res) => {
  * /orders:
  *   post:
  *     summary: Create a new order
- *     description: Fetches cart data, checks inventory, and creates an order.
+ *     description: Fetches cart data, checks inventory, creates an order, and attempts to send order data to the invoicing and email services.
  *     operationId: createOrder
  *     tags:
  *       - Orders
@@ -176,7 +176,7 @@ router.get("/orders", async (req, res) => {
  *         type: string
  *     responses:
  *       201:
- *         description: Order created successfully
+ *         description: Order created successfully, but invoicing and/or email services may have failed.
  *         content:
  *           application/json:
  *             schema:
@@ -224,6 +224,20 @@ router.get("/orders", async (req, res) => {
  *                             type: number
  *                             format: float
  *                             example: 99.98
+ *                 invoiceStatus:
+ *                   type: string
+ *                   enum: [success, failed]
+ *                   example: "failed"
+ *                 invoiceMessage:
+ *                   type: string
+ *                   example: "Failed to send order data to invoicing."
+ *                 emailStatus:
+ *                   type: string
+ *                   enum: [success, failed]
+ *                   example: "success"
+ *                 emailMessage:
+ *                   type: string
+ *                   example: "Order sent to email successfully."
  *       400:
  *         description: Missing user_id or token
  *         content:
@@ -278,17 +292,19 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       include: { order_items: true },
     });
 
-    // Send the new order to invoice and email
-    const orderSent = await sendOrder(newOrder);
-    if (!orderSent) {
-      throw new Error("Kunde inte skicka beställningen vidare.");
-    }
+    // Skickar newOrder till sendOrder
+    const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder);
 
-    // Returnera success
+    // Returnerar success med invoice och email status
     res.status(201).json({
-      message: "Order skapad",
+      message: "Order created successfully",
       order: newOrder,
+      invoiceStatus,
+      invoiceMessage,
+      emailStatus,
+      emailMessage,
     });
+
   } catch (error) {
     // Returnera error
     res.status(500).json({

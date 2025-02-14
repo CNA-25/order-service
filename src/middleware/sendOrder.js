@@ -8,6 +8,11 @@ const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 async function sendOrder(newOrder) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
+    let invoiceStatus = 'success';
+    let emailStatus = 'success';
+    let invoiceMessage = "Order sent to invoice successfully.";
+    let emailMessage = "Order sent to email successfully.";
+
     try {
         const shipmentData = {
             user_id,          
@@ -38,37 +43,32 @@ async function sendOrder(newOrder) {
         });
         console.log("resInvoice: ", resInvoice);
 
-        // Check if the INVOICE is OK (status code 200-299)
         if (!resInvoice.ok) {
-            console.error('Failed to send order data');
-            return null;
+            invoiceStatus = 'failed';
+            invoiceMessage = 'Failed to send order data to invoicing.';
+            console.error('Failed to send order data to invoicing.');
         }
 
         // Send to email
-        // Sending the POST request using async/await
-        /* const resEmail = await fetch(INVOICING_SERVICE_URL, {
-            method: 'POST', // We're sending data to the server
-            headers: {
-                // Tells the server that we are sending JSON
-                'Content-Type': 'application/json'
-            },
-            // Convert the data object into JSON
-            body: JSON.stringify(data)
-        }); */
+        const resEmail = await fetch(EMAIL_SERVICE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(shipmentData) // Antar att email använder samma format som invoice
+        });
 
-        // Check if the EMAIL is OK (status code 200-299)
-        /* if (!resEmail.ok) {
-            console.error('Failed to send order data');
-            return null;
-        } */
+        if (!resEmail.ok) {
+            emailStatus = 'failed';
+            emailMessage = 'Failed to send order data to email.';
+            console.error('Failed to send order data to email.');
+        }
 
-        // If successful, parse the response as JSON
-        const responseDataInvoice = await resInvoice.json();
-        console.log("responseDataInvoice: ", responseDataInvoice);
-        /*         const responseDataEmail = await resEmail.json();
-         */
-        // Return the server's responses
-        return { responseDataInvoice/* , responseDataEmail */ };
+        // Returnerar responsen från både email och invoicing
+        return {
+            invoiceStatus,
+            invoiceMessage,
+            emailStatus,
+            emailMessage,
+        };
 
     } catch (error) {
         console.error('Error sending order data:', error);
