@@ -16,36 +16,44 @@ const CART_SERVICE_URL = process.env.CART_SERVICE_URL;
  */
 
 const getCartData = async (req, res, next) => {
-    const { userId, token } = req.body; // userId och token kommer från JWT via front-end till vår /orders POST
+    const user_id = req.user.sub; // user_id kommer från JWTn
+    const token = req.token; // Får token från middleware
 
-    if (!userId || !token) {
+    if (!user_id) {
         return res.status(400).json({
-            error: "Saknar userId och token",
-            message: "userId och token krävs för att hämta kundvagnsdata",
+            error: "Saknar user_id",
+            message: "user_id krävs för att hämta kundvagnsdata",
         });
     }
 
     try {
-        // 
-        const response = await fetch(`${CART_SERVICE_URL}/cart/${userId}`, {
+        // Hämta kundvagnen för en specifik användare
+        const response = await fetch(`${CART_SERVICE_URL}/cart/${user_id}`, {
             method: "GET",
             headers: {
                 'token': token // Kommer från JWT token
             }
         });
 
-        if (!response.ok) { // Om fetchen misslyckas
-            console.error('Failed to fetch cart data');
-            return null;
-        }
-
         // Får cartData i JSON format
         const cartData = await response.json();
 
+        // Om hämtningen misslyckas
+        if (!response.ok) {
+            console.error(`Misslyckades med att hämta kundvagns för användare ${user_id}`);
+            return res.status(response.status).json({
+                error: `Misslyckades att hämta kundvagn för användare ${user_id}`,
+                message: cartData.message || "Ett fel uppstod vid hämtning av kundvagnsdata",
+            });
+        }
+
         // Kollar att cartData existerar och inte är tom
-        if (!cartData || !cartData.cart || cartData.cart.length === 0) {
-            console.error('Cart is empty or invalid');
-            return null;
+        if (!cartData || !cartData.cart || !cartData.cart.length) {
+            console.warn(`Ingen kundvagn hittades för användare ${user_id}`);
+            return res.status(200).json({
+                message: "Kundvagnen är tom",
+                cart: []
+            });
         }
 
         // Lägg till cartData i request objektet för att användas i nästa middleware
@@ -53,11 +61,12 @@ const getCartData = async (req, res, next) => {
 
         // Fortsätt till nästa middleware (checkInventory)
         next();
-    } catch (error) { // Om något går fel...
-        console.error('Error fetching cart data:', error);
+
+    } catch (error) { // Om något annat går fel...
+        console.error(`Misslyckades med att hämta kundvagnsdata för användare ${user_id}`, error);
         return res.status(500).json({
-            error: "Internal Server Error",
-            message: "Failed to fetch cart data",
+            error: "Oväntat fel",
+            message: "Ett oväntat fel inträffade vid hämtning av kundvagnsdata"
         });
     }
 };

@@ -1,48 +1,32 @@
 const INVOICING_SERVICE_URL = process.env.INVOICING_SERVICE_URL;
 
 // invoicingAPI POST med information om user_id och dens beställning
-// todo viktor, in progress
-
-// https://invoicing-service-git-invoicing-service.2.rahtiapp.fi/shipments
-/* {
-"user_id": 2,
-"timestamp": "2025-01-01T12:00:00",
-"order_price": 199.99,
-"order_id": 2,
-"order_item_id": 2,
-"product_id": 2,
-"amount": 2,
-"product_price": 99.99,
-"product_name": "Mega Craft Beer XL"
-} */
 
 // Skicka ordern till fakturering / invoicing
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
 async function sendOrder(newOrder) {
-
-    const { userId, orderPrice, orderId, orderItems, timestamp } = newOrder;
+    const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
     try {
-        // Format the shipment data to match the expected structure
-        // LIKELY TODO
-        const shipmentData = orderItems.map(item => ({
-            user_id: userId,               // Same as `userId` in the order
-            timestamp: timestamp,           // Use the timestamp from the `newOrder` object
-            order_price: orderPrice,        // Total price of the order
-            order_id: orderId,              // Order ID from the database
-            order_item_id: item.order_item_id, // Order item ID (from Prisma)
-            product_id: item.product_id,    // Product ID (from Prisma)
-            amount: item.amount,            // Amount (from Prisma)
-            product_price: item.product_price, // Price for each product (from Prisma)
-            product_name: item.product_name,  // Product name (from Prisma)
-        }));
+        const shipmentData = {
+            user_id,          
+            timestamp,        
+            order_price,      
+            order_id,         
+            order_items: order_items.map(item => ({
+                order_item_id: item.order_item_id,
+                product_id: Number(item.product_id), // BORDE VARA STRING! Men invoicing APIn kräver atm en INT
+                amount: item.quantity,
+                product_price: item.product_price,
+                product_name: item.product_name
+            }))
+        };
 
         console.log('newOrder: ', newOrder);
         console.log('shipmentData: ', shipmentData)
 
         // Send to invoicing
-        // Sending the POST request using async/await
         const resInvoice = await fetch(INVOICING_SERVICE_URL, {
             method: 'POST', // We're sending data to the server
             headers: {
