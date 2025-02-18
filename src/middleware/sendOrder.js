@@ -10,7 +10,7 @@ async function sendOrder(newOrder) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
     try {
-        const shipmentData = {
+        const shipmentData = { // Del av denna data skapas i vår POST /orders
             user_id,          
             timestamp,        
             order_price,      
@@ -24,9 +24,6 @@ async function sendOrder(newOrder) {
             }))
         };
 
-        console.log('newOrder: ', newOrder);
-        console.log('shipmentData: ', shipmentData)
-
         // Send to invoicing
         const resInvoice = await fetch(INVOICING_SERVICE_URL, {
             method: 'POST', // We're sending data to the server
@@ -37,14 +34,11 @@ async function sendOrder(newOrder) {
             // Convert the data object into JSON
             body: JSON.stringify(shipmentData)
         });
-        console.log("resInvoice: ", resInvoice);
 
         let invoiceStatus = "failed";
         let invoiceMessage = "Failed to send order data to invoicing.";
 
         if (resInvoice.ok) {
-            const responseDataInvoice = await resInvoice.json();
-            console.log("responseDataInvoice: ", responseDataInvoice);
             // Updaterar variablerna om invoice är successfull
             invoiceStatus = "success";
             invoiceMessage = "Order data sent to invoicing successfully.";
@@ -61,8 +55,7 @@ async function sendOrder(newOrder) {
         });
 
         if (resEmail.ok) {
-            const responseDataEmail = await resEmail.json();
-            console.log("respondeDataEmail: ", responseDataEmail);
+            // Updaterar variablerna om email är successfull
             emailStatus = "success";
             emailMessage = "Order sent to email successfully.";
         }

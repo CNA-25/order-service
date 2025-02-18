@@ -79,21 +79,6 @@ router.get("/admin/orders", async (req, res) => {
 });
 
 /**
- * Hämtar alla ordrar för en specifik användare.
- * 
- * Args:
- *  - user_id (int): Unikt user_id som hämtas från URL-parametern
- * 
- * Returns:
- *  - (Array | Object): En lista med ordrar inklusive orderdetaljer om de finns
- *  - (Object): Ett felmeddelande om inga ordrar hittas eller om ett serverfel uppstår
- * 
- * Exempel:
- *  - GET /orders/101
- *  - Response: [{ order_id: 1, user_id: 101, order_price: 299.99, order_items: [...] }, ...]
- */
-
-/**
  * @swagger
  * /orders:
  *   get:
@@ -292,7 +277,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
       include: { order_items: true },
     });
 
-    // Skickar newOrder till sendOrder
+    // Skickar newOrder till sendOrder och får tillbaks invoiceStatus, invoiceMessage, emailStatus, emailMessage
     const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder);
 
     // Returnerar success med invoice och email status
