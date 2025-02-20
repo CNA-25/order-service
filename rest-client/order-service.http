@@ -1,0 +1,18 @@
+### Hämta alla ordrar
+GET {{$dotenv ORDER_SERVICE_URL}}/admin/orders
+Content-Type: application/json
+token: {{$dotenv ORDER_SERVICE_ADMIN_AUTH_TOKEN}}
+
+### Hämta en användares alla ordrar
+GET {{$dotenv ORDER_SERVICE_URL}}/orders/
+token: {{$dotenv ORDER_SERVICE_USER_AUTH_TOKEN}}
+
+### Skapa en ny order
+POST {{$dotenv ORDER_SERVICE_URL}}/orders
+Content-Type: application/json
+token: {{$dotenv ORDER_SERVICE_USER_AUTH_TOKEN}}
+
+### Radera en order
+DELETE {{$dotenv ORDER_SERVICE_URL}}/admin/delete/1
+Content-Type: application/json
+token: {{$dotenv ORDER_SERVICE_ADMIN_AUTH_TOKEN}}
