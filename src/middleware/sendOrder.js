@@ -6,61 +6,95 @@ const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 // Skicka ordern till fakturering / invoicing
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
-async function sendOrder(newOrder) {
+async function sendOrder(newOrder, user_email) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
     try {
-        const shipmentData = { // Del av denna data skapas i vår POST /orders
-            user_id,          
-            timestamp,        
-            order_price,      
-            order_id,         
+        // --- SKICKA ORDER TILL INVOICE ---
+        const invoiceData = {
+            user_id,
+            timestamp,
+            order_price,
+            order_id,
             order_items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
-                product_id: Number(item.product_id), // BORDE VARA STRING! Men invoicing APIn kräver atm en INT
+                product_id: parseInt(item.product_id.replace(/\D/g, '')),  // TA BORT DÅ DET INTE BEHÖVS (INVOICE BYTT TILL VARCHAR)
                 amount: item.quantity,
-                product_price: item.product_price,
-                product_name: item.product_name
-            }))
+                product_price: item.product_price, 
+                product_name: item.product_name,
+            })),
         };
 
-        // Send to invoicing
+        console.log("Invoicing Data:", JSON.stringify(invoiceData, null, 2));
+
         const resInvoice = await fetch(INVOICING_SERVICE_URL, {
-            method: 'POST', // We're sending data to the server
-            headers: {
-                // Tells the server that we are sending JSON
-                'Content-Type': 'application/json'
-            },
-            // Convert the data object into JSON
-            body: JSON.stringify(shipmentData)
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(invoiceData),
         });
 
         let invoiceStatus = "failed";
         let invoiceMessage = "Failed to send order data to invoicing.";
 
         if (resInvoice.ok) {
-            // Updaterar variablerna om invoice är successfull
-            invoiceStatus = "success";
-            invoiceMessage = "Order data sent to invoicing successfully.";
+            const invoiceResponse = await resInvoice.json();
+            if (invoiceResponse.error) {
+                invoiceMessage = invoiceResponse.error.message || invoiceMessage;
+            } else {
+                invoiceStatus = "success";
+                invoiceMessage = "Order data sent to invoicing successfully.";
+            }
+        } else {
+            invoiceMessage = `Invoice API returned status: ${resInvoice.status}`;
         }
+
+        // --- SKICKA ORDER TILL EMAIL ---
+        const emailData = {
+            to: user_email,
+            subject: "Beställningsbekräftelse",
+            body: [
+                {
+                    orderId: order_id,
+                    userId: user_id,
+                    timestamp,
+                    orderPrice: order_price,
+                    orderItems: order_items.map(item => ({
+                        order_item_id: item.order_item_id,
+                        order_id,
+                        product_id: item.product_id,
+                        product_name: item.product_name,
+                        amount: item.quantity,
+                        product_price: item.product_price,
+                        total_price: item.total_price,
+                    })),
+                },
+            ],
+        };
+
+        console.log("Email Data:", JSON.stringify(emailData, null, 2));
+
+        const resEmail = await fetch(EMAIL_SERVICE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(emailData),
+        });
 
         let emailStatus = "failed";
         let emailMessage = "Failed to send order data to email.";
 
-        // Send to email
-        const resEmail = await fetch(EMAIL_SERVICE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(shipmentData) // Antar att email använder samma format som invoice
-        });
-
         if (resEmail.ok) {
-            // Updaterar variablerna om email är successfull
-            emailStatus = "success";
-            emailMessage = "Order sent to email successfully.";
+            const emailResponse = await resEmail.json();
+            if (emailResponse.error) {
+                emailMessage = emailResponse.error.message || emailMessage;
+            } else {
+                emailStatus = "success";
+                emailMessage = "Order sent to email successfully.";
+            }
+        } else {
+            emailMessage = `Email API returned status: ${resEmail.status}`;
         }
 
-        // Returnerar responsen från både email och invoicing
+        // Returnera status för fakturering och email
         return {
             invoiceStatus,
             invoiceMessage,

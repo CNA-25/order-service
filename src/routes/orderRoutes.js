@@ -4,6 +4,7 @@ const prisma = require("../config/prisma");
 
 // Importera middlewares
 const getCartData = require('../middleware/cart.js');
+const getProductData = require('../middleware/product.js');
 const checkInventory = require('../middleware/inventory.js');
 const sendOrder = require("../middleware/sendOrder.js");
 
@@ -251,26 +252,36 @@ router.get("/orders", async (req, res) => {
  *                   example: "An unexpected error occurred while creating the order"
  */
 
-router.post("/orders", getCartData, checkInventory, async (req, res) => {
+router.post("/orders", getCartData, getProductData, checkInventory, async (req, res) => {
   const user_id = parseInt(req.user.sub, 10); // Hämtar user_id från req (req.user.sub är en string men sparas som int i vår prisma)
   const cartData = req.cartData; // Hämtar cartData från middleware
+  const user_email = req.body.email; // Hämtar email från req.body
+
+  if (!user_email) {
+    return res.status(400).json({ error: "Email is required in the request body" });
+  }
 
   try {
     // Beräkna totalpriset för ordern
-    const order_price = cartData.cart.reduce((sum, item) => sum + item.total_price, 0);
+    const order_price = cartData.cart.reduce((sum, item) => sum + parseFloat(item.total_price), 0);
+    const formattedOrderPrice = order_price.toFixed(2);
 
-    // Skapa order i databasen
+    // --- SKAPA ORDER I DATABASEN ---
     const newOrder = await prisma.orders.create({
       data: {
         user_id,
-        order_price,
+        order_price: parseFloat(formattedOrderPrice),
         order_items: {
           create: cartData.cart.map(item => ({
-            product_id: String(item.product_id),
+            product_id: item.product_id,
             quantity: item.quantity,
-            product_price: item.price,
+            product_price: parseFloat(item.product_price).toFixed(2),
+            total_price: parseFloat(item.total_price).toFixed(2), 
             product_name: item.product_name,
-            total_price: item.total_price,
+            product_description: item.product_description,
+            product_image: item.product_image,
+            product_country: item.product_country,
+            product_category: item.product_category
           })),
         },
       },
@@ -278,7 +289,7 @@ router.post("/orders", getCartData, checkInventory, async (req, res) => {
     });
 
     // Skickar newOrder till sendOrder och får tillbaks invoiceStatus, invoiceMessage, emailStatus, emailMessage
-    const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder);
+    const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder, user_email);
 
     // Returnerar success med invoice och email status
     res.status(201).json({

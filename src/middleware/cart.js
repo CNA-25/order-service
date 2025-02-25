@@ -13,9 +13,6 @@ const getCartData = async (req, res, next) => {
             }
         });
 
-        // Får cartData i JSON format
-        const cartData = await response.json();
-
         // Om hämtningen misslyckas
         if (!response.ok) {
             console.error(`Misslyckades med att hämta kundvagn för användare ${user_id}`);
@@ -24,6 +21,9 @@ const getCartData = async (req, res, next) => {
                 message: cartData.message || "Ett fel uppstod vid hämtning av kundvagnsdata",
             });
         }
+
+        // Får cartData i JSON format
+        const cartData = await response.json();
 
         // Kollar att cartData existerar och inte är tom
         if (!cartData || !cartData.cart || !cartData.cart.length) {
