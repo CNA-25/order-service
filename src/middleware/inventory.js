@@ -5,6 +5,8 @@ const checkInventory = async (req, res, next) => {
     const cartData = req.cartData; // cartData från föregående middleware
     const user_email = req.body.email; // email från request body - byt ut mot inloggad användares email i jwt
 
+    const token = process.env.ORDER_SERVICE_USER_AUTH_TOKEN || req.token;
+    
     if (!user_email) {
         return res.status(400).json({ error: "Email is required in the request body" });
     }
