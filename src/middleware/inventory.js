@@ -6,9 +6,16 @@ const checkInventory = async (req, res, next) => {
     const user_email = req.body.email; // email från request body - byt ut mot inloggad användares email i jwt
 
     const token = process.env.ORDER_SERVICE_USER_AUTH_TOKEN || req.token;
-    
+
     if (!user_email) {
         return res.status(400).json({ error: "Email is required in the request body" });
+    }
+
+    if (!token) {
+        return res.status(500).json({
+            error: "Missing authentication token",
+            message: "Inventory service requires an authentication token"
+        });
     }
 
     try {
@@ -44,12 +51,10 @@ const checkInventory = async (req, res, next) => {
         console.log("Inventory check successful");
         next(); // Om allt ok, fortsätt till nästa middleware
     } catch (error) {
-        console.error(error);
-
-        // Om någonting annat misslyckas, returnera ett felmeddelande
+        console.error("Error checking inventory", error);
         return res.status(500).json({
-            error: "Internt serverfel",
-            message: "Misslyckades med att validera eller uppdatera lagersaldo",
+            error: "Internal server error",
+            message: "Failed to validate or update inventory stock",
         });
     }
 };
