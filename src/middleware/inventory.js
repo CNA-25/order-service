@@ -6,6 +6,7 @@ const checkInventory = async (req, res, next) => {
     const user_email = req.user.email; // email från request body - byt ut mot inloggad användares email i jwt
 
     const token = req.token;
+    console.log(token);
 
     if (!user_email) {
         return res.status(400).json({ error: "Email is required in the request body" });
@@ -38,6 +39,8 @@ const checkInventory = async (req, res, next) => {
             },
             body: JSON.stringify(inventoryRequest),
         });
+
+        console.log(inventoryResponse);
 
         // Om responsen från inventory service inte är ok, returnera ett felmeddelande
         if (!inventoryResponse.ok) {
