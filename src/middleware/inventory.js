@@ -3,7 +3,7 @@ const INVENTORY_SERVICE_URL = `${process.env.INVENTORY_SERVICE_URL}/inventory/de
 // Middleware som kontrollerar och reducerar lagersaldo för varje produkt i kundvagnen
 const checkInventory = async (req, res, next) => {
     const cartData = req.cartData; // cartData från föregående middleware
-    const user_email = req.body.email; // email från request body - byt ut mot inloggad användares email i jwt
+    const user_email = req.user.email; // email från request body - byt ut mot inloggad användares email i jwt
 
     const token = process.env.ORDER_SERVICE_USER_AUTH_TOKEN || req.token;
 
