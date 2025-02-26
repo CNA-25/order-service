@@ -3,21 +3,8 @@ const INVENTORY_SERVICE_URL = `${process.env.INVENTORY_SERVICE_URL}/inventory/de
 // Middleware som kontrollerar och reducerar lagersaldo för varje produkt i kundvagnen
 const checkInventory = async (req, res, next) => {
     const cartData = req.cartData; // cartData från föregående middleware
-    const user_email = req.user.email; // email från request body - byt ut mot inloggad användares email i jwt
-
-    const token = req.token;
-    console.log(token);
-
-    if (!user_email) {
-        return res.status(400).json({ error: "Email is required in the request body" });
-    }
-
-    if (!token) {
-        return res.status(500).json({
-            error: "Missing authentication token",
-            message: "Inventory service requires an authentication token"
-        });
-    }
+    const user_email = req.user.email; // email från req
+    const token = req.token; // Token från req
 
     try {
         const inventoryRequest = {
@@ -39,8 +26,6 @@ const checkInventory = async (req, res, next) => {
             },
             body: JSON.stringify(inventoryRequest),
         });
-
-        console.log(inventoryResponse);
 
         // Om responsen från inventory service inte är ok, returnera ett felmeddelande
         if (!inventoryResponse.ok) {

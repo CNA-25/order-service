@@ -18,7 +18,7 @@ async function sendOrder(newOrder, user_email) {
             order_id,
             order_items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
-                product_id: parseInt(item.product_id.replace(/\D/g, '')),  // TA BORT DÅ DET INTE BEHÖVS (INVOICE BYTT TILL VARCHAR)
+                product_id: item.product_id,
                 amount: item.quantity,
                 product_price: item.product_price, 
                 product_name: item.product_name,

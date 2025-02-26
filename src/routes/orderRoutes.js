@@ -257,10 +257,6 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
   const cartData = req.cartData; // Hämtar cartData från middleware
   const user_email = req.user.email; // Hämtar email från req
 
-  if (!user_email) {
-    return res.status(400).json({ error: "Email is required in the request body" });
-  }
-
   try {
     // Beräkna totalpriset för ordern
     const order_price = cartData.cart.reduce((sum, item) => sum + parseFloat(item.total_price), 0);
@@ -304,8 +300,8 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
   } catch (error) {
     // Returnera error
     res.status(500).json({
-      error: "Misslyckades att skapa order",
-      message: error.message,
+      error: "Failed to create order",
+      message: error.message
     });
   }
 });
