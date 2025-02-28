@@ -72,6 +72,7 @@ async function sendOrder(newOrder, user_email) {
     // Checkar om promisen returnerar 'fulfilled'
     const invoiceStatus = invoiceResult.status === "fulfilled" ? "success" : "failed";
 
+    // Ternary conditional operator -> const A = B === "fulfilled" ? (C ? D : F) : E;
     // Checkar om invoiceResult.status === "fulfilled"
     // TRUE -> Checkar om invoiceResult.value är error. 
     //      Yes -> använd invoiceResult.value.error.message
