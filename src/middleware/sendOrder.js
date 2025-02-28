@@ -9,10 +9,9 @@ const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 async function sendOrder(newOrder, user_email) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
-    try {
-        // --- SKICKA ORDER TILL INVOICE ---
-        const invoiceData = {
-            user_id,
+    // Invoice payload
+    const invoiceData = {
+        user_id,
             timestamp,
             order_price,
             order_id,
@@ -23,34 +22,11 @@ async function sendOrder(newOrder, user_email) {
                 product_price: item.product_price, 
                 product_name: item.product_name,
             })),
-        };
+    }
 
-        console.log("Invoicing Data:", JSON.stringify(invoiceData, null, 2));
-
-        const resInvoice = await fetch(INVOICING_SERVICE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(invoiceData),
-        });
-
-        let invoiceStatus = "failed";
-        let invoiceMessage = "Failed to send order data to invoicing.";
-
-        if (resInvoice.ok) {
-            const invoiceResponse = await resInvoice.json();
-            if (invoiceResponse.error) {
-                invoiceMessage = invoiceResponse.error.message || invoiceMessage;
-            } else {
-                invoiceStatus = "success";
-                invoiceMessage = "Order data sent to invoicing successfully.";
-            }
-        } else {
-            invoiceMessage = `Invoice API returned status: ${resInvoice.status}`;
-        }
-
-        // --- SKICKA ORDER TILL EMAIL ---
-        const emailData = {
-            to: user_email,
+    // Email payload
+    const emailData = {
+        to: user_email,
             subject: "Beställningsbekräftelse",
             body: [
                 {
@@ -59,58 +35,65 @@ async function sendOrder(newOrder, user_email) {
                     timestamp,
                     orderPrice: order_price,
                     orderItems: order_items.map(item => ({
+                        product_image: item.product_image,
+                        product_name: item.product_name,
+                        product_description: item.product_description,
+                        product_country: item.product_country,
+                        product_category: item.product_category,
                         order_item_id: item.order_item_id,
                         order_id,
                         product_id: item.product_id,
-                        product_name: item.product_name,
-                        amount: item.quantity,
+                        quantity: item.quantity,
                         product_price: item.product_price,
                         total_price: item.total_price,
                     })),
                 },
             ],
-        };
-
-        console.log("Email Data:", JSON.stringify(emailData, null, 2));
-
-        const resEmail = await fetch(EMAIL_SERVICE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(emailData),
-        });
-
-        let emailStatus = "failed";
-        let emailMessage = "Failed to send order data to email.";
-
-        if (resEmail.ok) {
-            const emailResponse = await resEmail.json();
-            if (emailResponse.error) {
-                emailMessage = emailResponse.error.message || emailMessage;
-            } else {
-                emailStatus = "success";
-                emailMessage = "Order sent to email successfully.";
-            }
-        } else {
-            emailMessage = `Email API returned status: ${resEmail.status}`;
-        }
-
-        // Returnera status för fakturering och email
-        return {
-            invoiceStatus,
-            invoiceMessage,
-            emailStatus,
-            emailMessage,
-        };
-
-    } catch (error) {
-        console.error('Error sending order data:', error);
-        return {
-            invoiceStatus: "failed",
-            invoiceMessage: error.message,
-            emailStatus: "failed",
-            emailMessage: "Error occurred while sending the email data."
-        };
     }
+
+    console.log("Invoicing Data:", JSON.stringify(invoiceData, null, 2));
+    console.log("Email Data:", JSON.stringify(emailData, null, 2));
+
+    // Kör båda requests parallellt
+    const [invoiceResult, emailResult] = await Promise.allSettled([
+        fetch(INVOICING_SERVICE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify(invoiceData),
+        }).then(res => res.ok ? res.json() : Promise.reject(`Invoice API status: ${res.status}`)),
+
+        fetch(EMAIL_SERVICE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify(emailData),
+        }).then(res => res.ok ? res.json() : Promise.reject(`Email API status: ${res.status}`)),
+    ])
+
+    // Checkar om promisen returnerar 'fulfilled'
+    const invoiceStatus = invoiceResult.status === "fulfilled" ? "success" : "failed";
+
+    // Checkar om invoiceResult.status === "fulfilled"
+    // TRUE -> Checkar om invoiceResult.value är error. 
+    //      Yes -> använd invoiceResult.value.error.message
+    //      No  -> använd "Order data sent to invoicing successfully."
+    // FALSE -> använd invoiceResult.reason
+    const invoiceMessage = invoiceResult.status === "fulfilled"
+        ? (invoiceResult.value.error ? invoiceResult.value.error.message : "Order data sent to invoicing successfully.")
+        : invoiceResult.reason;
+
+    // Gör samma med emailStatus
+    const emailStatus = emailResult.status === "fulfilled" ? "success" : "failed";
+    const emailMessage = emailResult.status === "fulfilled"
+        ? (emailResult.value.error ? emailResult.value.error.message : "Order sent to email successfully.")
+        : emailResult.reason;
+
+    // Returnerar status för email och invoice
+    return {
+        invoiceStatus,
+        invoiceMessage,
+        emailStatus,
+        emailMessage,
+    };
 }
 
 module.exports = sendOrder;
