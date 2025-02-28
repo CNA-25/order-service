@@ -5,51 +5,66 @@ const getProductData = async (req, res, next) => {
     const token = process.env.PRODUCT_SERVICE_AUTH_TOKEN || req.token;
 
     try {
-        // hämta produktinformation
-        const getProductDetails = async (item) => {
-            try {
-                const response = await fetch(`${PRODUCT_SERVICE_URL}/products/${item.product_id}`, {
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${token.trim()}`,
-                        "Content-Type": "application/json"
-                    }
-                });
+        // Hämtar alla product_id från användarens cart
+        const productCodes = cartData.cart.map(item => item.product_id);
 
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch product data, status: ${response.status}`);
-                }
+        // Request body som innehåller alla product_id
+        const requestBody = {
+            product_codes: productCodes
+        };
 
-                const data = await response.json();
+        // Skickar en POST request som returnerar information om alla våra product_id i cartData
+        const response = await fetch(`${PRODUCT_SERVICE_URL}/products/batch`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token.trim()}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-                if (!data || !data.product || data.product.price == null) {
-                    throw new Error(`Missing product data or price for ${item.product_id}`);
-                }
+        if (!response.ok) {
+            throw new Error(`Failed to fetch product data, status: ${response.status}`);
+        }
 
-                // räkna ut totalpris för varje produkt
-                const product_price = parseFloat(data.product.price);
-                const total_price = parseFloat(product_price * item.quantity);
+        // Parse JSON respons
+        const data = await response.json();
 
-                // lägg till produktinformation till varje item (produkt), använd default-värden om information saknas
+        // Mappar cartData innehållet och matchar det med produkinformationen (rätt product_id får rätt information)
+        const updatedCartData = cartData.cart.map(item => {
+            // Hittar productinformationen som matchar product_idn
+            const productData = data.products.find(product => product.sku === item.product_id);
+
+            // Om vi hittar information om produkten, räkna ut pris och returnera den uppdaterade informationen
+            if (productData) {
+                const product_price = parseFloat(productData.price || 0); // Checkar att det är en siffra
+                const total_price = product_price * item.quantity;
+
+                // Sätter in information som hör till varje product_id. Default värden om information inte hittas
                 return {
                     ...item,
                     product_price,
                     total_price,
-                    product_name: data.product?.name || "Okänd produkt",
-                    product_description: data.product?.description || 'Ingen beskrivning tillgänglig',
-                    product_image: data.product?.image || '/default-image.jpg',
-                    product_country: data.product?.country || 'Okänt land',
-                    product_category: data.product?.category || 'Okategoriserad'
+                    product_name: productData.name || "Okänd produkt", 
+                    product_description: productData.description || "Ingen beskrivning tillgänglig",
+                    product_image: productData.image || "/default-image.jpg",
+                    product_country: productData.country || "Okänt land", 
+                    product_category: productData.category || "Okategoriserad" 
                 };
-
-            } catch (err) {
-                console.error(`Error fetching product data for ${item.product_id}:`, err.message);
-                throw new Error(`Failed to fetch product data for ${item.product_id}: ${err.message}`);
+            } else {
+                // Om vi inte hittar produktinformation, returnera produkten med default information
+                return {
+                    ...item,
+                    product_price: 0,
+                    total_price: 0,
+                    product_name: "Okänd produkt",
+                    product_description: "Ingen beskrivning tillgänglig",
+                    product_image: "/default-image.jpg",
+                    product_country: "Okänt land",
+                    product_category: "Okategoriserad"
+                };
             }
-        };
-
-        // Hämta och uppdatera produktdata för alla produkter
-        const updatedCartData = await Promise.all(cartData.cart.map(getProductDetails));
+        });
 
         // Uppdatera cartData med produktinformation
         req.cartData.cart = updatedCartData;
