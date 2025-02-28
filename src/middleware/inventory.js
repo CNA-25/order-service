@@ -27,12 +27,39 @@ const checkInventory = async (req, res, next) => {
             body: JSON.stringify(inventoryRequest),
         });
 
-        // Om responsen från inventory service inte är ok, returnera ett felmeddelande
+        // Om responsen från inventory service inte är OK, hantera fel baserat på statuskod
         if (!inventoryResponse.ok) {
-            const errorData = await inventoryResponse.json();
-            return res.status(400).json({
-                error: errorData.error || "Uppdatering av lagersaldo misslyckades",
-                message: errorData.message || "Går inte att uppdatera lagersaldo",
+
+            // Parse JSON response för att få error details
+            let errorData = {};
+            try {
+                errorData = await inventoryResponse.json();
+            } catch (err) { // Om parsing misslyckas (invalid JSON), logga errorn
+                console.error("Failed to parse inventory service response:", err);
+                errorData = { 
+                    error: "Invalid JSON response",
+                    detail: "The response from the inventory service could not be parsed as JSON." 
+                };
+            }
+
+            if (inventoryResponse.status === 404) {
+                return res.status(404).json({
+                    error: "Produkten hittades inte",
+                    message: errorData.detail || "En eller flera produkter saknas i lagret",
+                });
+            }
+
+            if (inventoryResponse.status === 400) {
+                return res.status(400).json({
+                    error: "Otillräckligt lagersaldo",
+                    message: errorData.detail || "Det finns inte tillräckligt med produkter i lager",
+                })
+            }
+
+            // Fallback för andra fel
+            return res.status(inventoryResponse.status).json({
+                error: errorData.error || "Lageruppdatering misslyckades",
+                message: errorData.detail || "Ett okänt fel inträffade vid uppdatering av lagersaldo",
             });
         }
 
