@@ -7,50 +7,50 @@ const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
 async function sendOrder(newOrder, user_email, token) {
-    const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
+    const { user_id, order_price, order_id, order_items, timestamp, shipping_address } = newOrder;
 
     // Invoice payload
     const invoiceData = {
         user_id,
-            timestamp,
-            order_price,
-            order_id,
-            // shipping_address,
-            order_items: order_items.map(item => ({
-                order_item_id: item.order_item_id,
-                product_id: item.product_id,
-                amount: item.quantity,
-                product_price: item.product_price, 
-                product_name: item.product_name,
-            })),
+        timestamp,
+        order_price,
+        order_id,
+        shipping_address,
+        order_items: order_items.map(item => ({
+            order_item_id: item.order_item_id,
+            product_id: item.product_id,
+            amount: item.quantity,
+            product_price: item.product_price,
+            product_name: item.product_name,
+        })),
     }
 
     // Email payload
     const emailData = {
         to: user_email,
-            subject: "Beställningsbekräftelse",
-            body: [
-                {
-                    orderId: order_id,
-                    userId: user_id,
-                    timestamp,
-                    orderPrice: order_price,
-                    // shipping_address, (om email-service vill ha det)
-                    orderItems: order_items.map(item => ({
-                        product_image: item.product_image,
-                        product_name: item.product_name,
-                        product_description: item.product_description,
-                        product_country: item.product_country,
-                        product_category: item.product_category,
-                        order_item_id: item.order_item_id,
-                        order_id,
-                        product_id: item.product_id,
-                        quantity: item.quantity,
-                        product_price: item.product_price,
-                        total_price: item.total_price,
-                    })),
-                },
-            ],
+        subject: "Beställningsbekräftelse",
+        body: [
+            {
+                orderId: order_id,
+                userId: user_id,
+                timestamp,
+                orderPrice: order_price,
+                shipping_address,
+                orderItems: order_items.map(item => ({
+                    product_image: item.product_image,
+                    product_name: item.product_name,
+                    product_description: item.product_description,
+                    product_country: item.product_country,
+                    product_category: item.product_category,
+                    order_item_id: item.order_item_id,
+                    order_id,
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    product_price: item.product_price,
+                    total_price: item.total_price,
+                })),
+            },
+        ],
     }
 
     console.log("Invoicing Data:", JSON.stringify(invoiceData, null, 2));
@@ -60,15 +60,16 @@ async function sendOrder(newOrder, user_email, token) {
     const [invoiceResult, emailResult] = await Promise.allSettled([
         fetch(INVOICING_SERVICE_URL, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                "Authorization": `Bearer ${token.trim()}`},
+                "Authorization": `Bearer ${token.trim()}`
+            },
             body: JSON.stringify(invoiceData),
         }).then(res => res.ok ? res.json() : Promise.reject(`Invoice API status: ${res.status} - ${res.statusText}`)),
 
         fetch(EMAIL_SERVICE_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(emailData),
         }).then(res => res.ok ? res.json() : Promise.reject(`Email API status: ${res.status} - ${res.statusText}`)),
     ])
