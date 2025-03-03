@@ -4,6 +4,6 @@ Content-Type: application/json
 Authorization: Bearer {{$dotenv PRODUCT_SERVICE_AUTH_TOKEN}}
 
 ### Hämta en produkt (sku)
-GET {{$dotenv PRODUCT_SERVICE_URL}}/products/101-USL
+GET {{$dotenv PRODUCT_SERVICE_URL}}/products/10004-FIL
 Content-Type: application/json
 Authorization: Bearer {{$dotenv PRODUCT_SERVICE_AUTH_TOKEN}}

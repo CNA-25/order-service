@@ -15,6 +15,7 @@ async function sendOrder(newOrder, user_email, token) {
             timestamp,
             order_price,
             order_id,
+            // shipping_address,
             order_items: order_items.map(item => ({
                 order_item_id: item.order_item_id,
                 product_id: item.product_id,
@@ -34,6 +35,7 @@ async function sendOrder(newOrder, user_email, token) {
                     userId: user_id,
                     timestamp,
                     orderPrice: order_price,
+                    // shipping_address, (om email-service vill ha det)
                     orderItems: order_items.map(item => ({
                         product_image: item.product_image,
                         product_name: item.product_name,

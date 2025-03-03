@@ -257,6 +257,11 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
   const cartData = req.cartData; // Hämtar cartData från middleware
   const user_email = req.user.email; // Hämtar email från req
   const token = req.token; // Hämtar token från req
+  const shipping_address = req.body.shipping_address; // Hämtar shipping_address från req
+
+   if (!shipping_address || shipping_address.trim() === '') {
+    return res.status(400).json({ message: 'Shipping address is required' });
+  }
 
   try {
     // Beräkna totalpriset för ordern
@@ -268,6 +273,7 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
       data: {
         user_id,
         order_price: parseFloat(formattedOrderPrice),
+        shipping_address,
         order_items: {
           create: cartData.cart.map(item => ({
             product_id: item.product_id,
