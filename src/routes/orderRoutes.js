@@ -256,6 +256,7 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
   const user_id = parseInt(req.user.sub, 10); // Hämtar user_id från req (req.user.sub är en string men sparas som int i vår prisma)
   const cartData = req.cartData; // Hämtar cartData från middleware
   const user_email = req.user.email; // Hämtar email från req
+  const token = req.token; // Hämtar token från req
 
   try {
     // Beräkna totalpriset för ordern
@@ -285,7 +286,7 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
     });
 
     // Skickar newOrder till sendOrder och får tillbaks invoiceStatus, invoiceMessage, emailStatus, emailMessage
-    const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder, user_email);
+    const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder, user_email, token);
 
     // Returnerar success med invoice och email status
     res.status(201).json({

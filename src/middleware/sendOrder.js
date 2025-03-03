@@ -6,7 +6,7 @@ const EMAIL_SERVICE_URL = process.env.EMAIL_SERVICE_URL;
 // Skicka ordern till fakturering / invoicing
 // Information om beställningen kommer från getCartData funktion
 // dens return kan användas i /orders POST i orderRoutes för att köra sendOrder
-async function sendOrder(newOrder, user_email) {
+async function sendOrder(newOrder, user_email, token) {
     const { user_id, order_price, order_id, order_items, timestamp } = newOrder;
 
     // Invoice payload
@@ -58,7 +58,9 @@ async function sendOrder(newOrder, user_email) {
     const [invoiceResult, emailResult] = await Promise.allSettled([
         fetch(INVOICING_SERVICE_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
+            headers: { 
+                'Content-Type': 'application/json',
+                "Authorization": `Bearer ${token.trim()}`},
             body: JSON.stringify(invoiceData),
         }).then(res => res.ok ? res.json() : Promise.reject(`Invoice API status: ${res.status}`)),
 
@@ -73,11 +75,11 @@ async function sendOrder(newOrder, user_email) {
     const invoiceStatus = invoiceResult.status === "fulfilled" ? "success" : "failed";
 
     // Ternary conditional operator -> const A = B === "fulfilled" ? (C ? D : F) : E;
-    // Checkar om invoiceResult.status === "fulfilled"
-    // TRUE -> Checkar om invoiceResult.value är error. 
-    //      Yes -> använd invoiceResult.value.error.message
-    //      No  -> använd "Order data sent to invoicing successfully."
-    // FALSE -> använd invoiceResult.reason
+    // Checkar om invoiceResult.status === "fulfilled" (B === "fulfilled")
+    // TRUE -> Checkar om invoiceResult.value är error. (C)
+    //      Yes -> använd invoiceResult.value.error.message (D)
+    //      No  -> använd "Order data sent to invoicing successfully." (F)
+    // FALSE -> använd invoiceResult.reason (E)
     const invoiceMessage = invoiceResult.status === "fulfilled"
         ? (invoiceResult.value.error ? invoiceResult.value.error.message : "Order data sent to invoicing successfully.")
         : invoiceResult.reason;
