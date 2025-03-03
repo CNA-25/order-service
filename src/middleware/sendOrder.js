@@ -62,13 +62,13 @@ async function sendOrder(newOrder, user_email, token) {
                 'Content-Type': 'application/json',
                 "Authorization": `Bearer ${token.trim()}`},
             body: JSON.stringify(invoiceData),
-        }).then(res => res.ok ? res.json() : Promise.reject(`Invoice API status: ${res.status}`)),
+        }).then(res => res.ok ? res.json() : Promise.reject(`Invoice API status: ${res.status} - ${res.statusText}`)),
 
         fetch(EMAIL_SERVICE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify(emailData),
-        }).then(res => res.ok ? res.json() : Promise.reject(`Email API status: ${res.status}`)),
+        }).then(res => res.ok ? res.json() : Promise.reject(`Email API status: ${res.status} - ${res.statusText}`)),
     ])
 
     // Checkar om promisen returnerar 'fulfilled'
