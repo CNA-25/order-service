@@ -29,26 +29,28 @@ async function sendOrder(newOrder, user_email, token) {
     const emailData = {
         to: user_email,
         subject: "Beställningsbekräftelse",
-        body: {
-            orderId: order_id,
-            userId: user_id,
-            timestamp,
-            orderPrice: order_price,
-            shipping_address,
-            orderItems: order_items.map(item => ({
-                product_image: item.product_image,
-                product_name: item.product_name,
-                product_description: item.product_description,
-                product_country: item.product_country,
-                product_category: item.product_category,
-                order_item_id: item.order_item_id,
-                order_id,
-                product_id: item.product_id,
-                quantity: item.quantity,
-                product_price: item.product_price,
-                total_price: item.total_price,
-            })),
-        },
+        body: [
+            {
+                orderId: order_id,
+                userId: user_id,
+                timestamp,
+                orderPrice: order_price,
+                shipping_address,
+                orderItems: order_items.map(item => ({
+                    product_image: item.product_image,
+                    product_name: item.product_name,
+                    product_description: item.product_description,
+                    product_country: item.product_country,
+                    product_category: item.product_category,
+                    order_item_id: item.order_item_id,
+                    order_id,
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    product_price: item.product_price,
+                    total_price: item.total_price,
+                })),
+            },
+        ],
     }
 
     console.log("Invoicing Data:", JSON.stringify(invoiceData, null, 2));
