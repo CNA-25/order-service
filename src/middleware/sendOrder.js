@@ -28,7 +28,7 @@ async function sendOrder(newOrder, user_email, token) {
     // Email payload
     const emailData = {
         to: user_email,
-        subject: "Beställningsbekräftelse",
+        subject: `Beercraft Order Confirmation #${order_id}`,
         body: [
             {
                 orderId: order_id,
@@ -81,16 +81,16 @@ async function sendOrder(newOrder, user_email, token) {
     // Checkar om invoiceResult.status === "fulfilled" (B === "fulfilled")
     // TRUE -> Checkar om invoiceResult.value är error. (C)
     //      Yes -> använd invoiceResult.value.error.message (D)
-    //      No  -> använd "Order data sent to invoicing successfully." (F)
+    //      No  -> använd "Order data sent to invoicing-service successfully." (F)
     // FALSE -> använd invoiceResult.reason (E)
     const invoiceMessage = invoiceResult.status === "fulfilled"
-        ? (invoiceResult.value.error ? invoiceResult.value.error.message : "Order data sent to invoicing successfully.")
+        ? (invoiceResult.value.error ? invoiceResult.value.error.message : "Order data sent to invoicing-service successfully.")
         : invoiceResult.reason;
 
     // Gör samma med emailStatus
     const emailStatus = emailResult.status === "fulfilled" ? "success" : "failed";
     const emailMessage = emailResult.status === "fulfilled"
-        ? (emailResult.value.error ? emailResult.value.error.message : "Order sent to email successfully.")
+        ? (emailResult.value.error ? emailResult.value.error.message : "Order data sent to email-service successfully.")
         : emailResult.reason;
 
     // Returnerar status för email och invoice
