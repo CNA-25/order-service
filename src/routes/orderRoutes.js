@@ -262,20 +262,20 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
   try {
     // Beräkna totalpriset för ordern
     const order_price = cartData.cart.reduce((sum, item) => sum + parseFloat(item.total_price), 0);
-    const formattedOrderPrice = order_price.toFixed(2);
+    const formattedOrderPrice = parseFloat(order_price.toFixed(2));
 
     // --- SKAPA ORDER I DATABASEN ---
     const newOrder = await prisma.orders.create({
       data: {
         user_id,
-        order_price: parseFloat(formattedOrderPrice),
+        order_price: formattedOrderPrice,
         shipping_address,
         order_items: {
           create: cartData.cart.map(item => ({
             product_id: item.product_id,
             quantity: item.quantity,
-            product_price: parseFloat(item.product_price).toFixed(2),
-            total_price: parseFloat(item.total_price).toFixed(2), 
+            product_price: parseFloat(item.product_price.toFixed(2)),
+            total_price: parseFloat(item.total_price.toFixed(2)), 
             product_name: item.product_name,
             product_description: item.product_description,
             product_image: item.product_image,
