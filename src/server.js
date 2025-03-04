@@ -11,7 +11,8 @@ const allowedOrigin = process.env.USERS_FRONTEND_URL;
 app.use(cors({
     origin: allowedOrigin,  // tillåt anrop från frontend
     methods: "GET, POST, PUT, DELETE", 
-    allowedHeaders: "Content-Type, Authorization",
+    allowedHeaders: ["Content-Type", "Authorization", "token"], 
+    credentials: true,
 }));
 
 setupSwagger(app);
