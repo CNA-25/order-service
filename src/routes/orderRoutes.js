@@ -35,36 +35,58 @@ const sendOrder = require("../middleware/sendOrder.js");
  *                 properties:
  *                   order_id:
  *                     type: integer
- *                     example: 1
+ *                     example: 20
  *                   user_id:
  *                     type: integer
  *                     example: 101
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-03-03T17:07:12.701Z"
  *                   order_price:
- *                     type: number
- *                     format: float
- *                     example: 299.99
+ *                     type: string
+ *                     example: "11"
+ *                   shipping_address:
+ *                     type: string
+ *                     example: "123 Main St, City, Country, ZIP"
  *                   order_items:
  *                     type: array
  *                     items:
  *                       type: object
  *                       properties:
- *                         product_id:
+ *                         order_item_id:
  *                           type: integer
- *                           example: 1
+ *                           example: 48
+ *                         order_id:
+ *                           type: integer
+ *                           example: 20
+ *                         product_id:
+ *                           type: string
+ *                           example: "10000-FIL"
  *                         product_name:
  *                           type: string
- *                           example: "Hantverksöl IPA"
+ *                           example: "Karhu 4,6%"
  *                         quantity:
  *                           type: integer
- *                           example: 2
+ *                           example: 1
  *                         product_price:
- *                           type: number
- *                           format: float
- *                           example: 149.99
+ *                           type: string
+ *                           example: "11"
  *                         total_price:
- *                           type: number
- *                           format: float
- *                           example: 299.98
+ *                           type: string
+ *                           example: "11"
+ *                         product_description:
+ *                           type: string
+ *                           example: "Gulbrun, medelfyllig, medelstor humlebeska, lätt maltighet, fruktig"
+ *                         product_image:
+ *                           type: string
+ *                           example: "/uploads/1740587181163-karhu-46-burk.jpg"
+ *                         product_country:
+ *                           type: string
+ *                           example: "Finland"
+ *                         product_category:
+ *                           type: string
+ *                           example: "Lager"
  *       403:
  *         description: Access denied. Admins only.
  *         content:
@@ -294,7 +316,7 @@ router.get("/orders", async (req, res) => {
  *                     order_price:
  *                       type: number
  *                       format: float
- *                       example: 199.99
+ *                       example: 12.58
  *                     shipping_address:
  *                       type: string
  *                       example: "Jan-Magnus Janssons plats 1, Helsingfors, Finland, 00560"
@@ -315,11 +337,11 @@ router.get("/orders", async (req, res) => {
  *                           product_price:
  *                             type: number
  *                             format: float
- *                             example: 49.99
+ *                             example: 6.29
  *                           total_price:
  *                             type: number
  *                             format: float
- *                             example: 99.98
+ *                             example: 12.58
  *                 invoiceStatus:
  *                   type: string
  *                   enum: [success, failed]
