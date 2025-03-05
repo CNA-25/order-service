@@ -28,7 +28,16 @@ const getProductData = async (req, res, next) => {
 
         // Kontrollera om förfrågan lyckades
         if (!response.ok) {
-            throw new Error(`Failed to fetch product data, status: ${response.status}`);
+            let errorMessage = `Failed to fetch product data. Status: ${response.status}`;
+
+            try {
+                const errorData = await response.json(); // Försök att tolka felmeddelandet som JSON
+                errorMessage += ` - ${errorData.message || JSON.stringify(errorData)}`;
+            } catch (e) {
+                errorMessage += ` - ${response.statusText}`;
+            }
+
+            throw new Error(errorMessage);
         }
 
         // Parsa JSON-svar
@@ -39,7 +48,7 @@ const getProductData = async (req, res, next) => {
             // Hitta motsvarande produktinformation baserat på product_id
             const productData = data.products.find(product => product.sku === item.product_id);
 
-             // Om produktinformationen finns, räkna ut pris och returnera uppdaterad information
+            // Om produktinformationen finns, räkna ut pris och returnera uppdaterad information
             if (productData) {
                 const product_price = parseFloat(productData.price || 0); // Säkerställ att priset är en siffra
                 const total_price = product_price * item.quantity;
@@ -49,11 +58,11 @@ const getProductData = async (req, res, next) => {
                     ...item,
                     product_price,
                     total_price,
-                    product_name: productData.name || "Okänd produkt", 
+                    product_name: productData.name || "Okänd produkt",
                     product_description: productData.description || "Ingen beskrivning tillgänglig",
                     product_image: productData.image || "/default-image.jpg",
-                    product_country: productData.country || "Okänt land", 
-                    product_category: productData.category || "Okategoriserad" 
+                    product_country: productData.country || "Okänt land",
+                    product_category: productData.category || "Okategoriserad"
                 };
             } else {
                 // Om produktinformationen saknas, sätt default-värden
