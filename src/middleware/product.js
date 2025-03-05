@@ -33,15 +33,17 @@ const getProductData = async (req, res, next) => {
         // TODO behöver tydligare beskrivning VAD i responsen som är !OK,
         // själva felet kan komma från products
         if (!response.ok) {
-            let errorMessage = `Failed to fetch product data. Status: ${response.status}`;
-
+            let errorMessage = `Failed to fetch product data. Status: ${response.status}`; // Basic error message
+        
             try {
-                const errorData = await response.json(); // Försök att tolka felmeddelandet som JSON
-                errorMessage += ` - ${errorData.message || JSON.stringify(errorData)}`;
-            } catch (e) {
+                const errorData = await response.json(); // Parsa JSON
+                if (errorData.error) { // Om svaret innehåller ett "error" fält, sätt till det i errorMessage
+                    errorMessage += ` - ${errorData.error}`;
+                }
+            } catch (e) { // Om parsing misslyckas, använd statusText som fallback
                 errorMessage += ` - ${response.statusText}`;
             }
-
+        
             throw new Error(errorMessage);
         }
 
