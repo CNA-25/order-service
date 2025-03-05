@@ -1,10 +1,12 @@
 ### Hämta lagersaldo för alla produkter
 GET {{$dotenv INVENTORY_SERVICE_URL}}/inventory
 Content-Type: application/json
+Authorization: Bearer {{$dotenv ORDER_SERVICE_USER_AUTH_TOKEN}}
 
 ### Minska lagersaldo för produkter
 POST {{$dotenv INVENTORY_SERVICE_URL}}/inventory/decrease
 Content-Type: application/json
+Authorization: Bearer {{$dotenv ORDER_SERVICE_USER_AUTH_TOKEN}}
 
 {
   "email": "order-service@test.com",
