@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require("../config/prisma");
 
 // Importera middlewares
+const adminMiddleware = require("../middleware/adminMiddleware.js");
 const getCartData = require('../middleware/cart.js');
 const getProductData = require('../middleware/product.js');
 const checkInventory = require('../middleware/inventory.js');
@@ -13,19 +14,15 @@ const sendOrder = require("../middleware/sendOrder.js");
  * /admin/orders:
  *   get:
  *     summary: Retrieve all orders (Admin access only)
- *     description: Fetches all orders from the database.
- *     tags: [Orders]
- *     parameters:
- *       - in: header
- *         description: The JWT token used for authentication. Required to get orders.
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *           description: The JWT token for authentication.
+ *     description: Fetches all orders from the database, including order items. Only accessible by admin users.
+ *     operationId: getAllOrders
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []  # Requires JWT authentication (admin only)
  *     responses:
  *       200:
- *         description: Successfully retrieved orders.
+ *         description: Successfully retrieved orders
  *         content:
  *           application/json:
  *             schema:
@@ -35,20 +32,20 @@ const sendOrder = require("../middleware/sendOrder.js");
  *                 properties:
  *                   order_id:
  *                     type: integer
- *                     example: 20
+ *                     example: 123
  *                   user_id:
  *                     type: integer
- *                     example: 101
+ *                     example: 18
  *                   timestamp:
  *                     type: string
  *                     format: date-time
- *                     example: "2025-03-03T17:07:12.701Z"
+ *                     example: "2025-03-04T23:18:59.504Z"
  *                   order_price:
  *                     type: string
- *                     example: "11"
+ *                     example: "11.7"
  *                   shipping_address:
  *                     type: string
- *                     example: "123 Main St, City, Country, ZIP"
+ *                     example: "123 Main St, City, Country"
  *                   order_items:
  *                     type: array
  *                     items:
@@ -56,96 +53,83 @@ const sendOrder = require("../middleware/sendOrder.js");
  *                       properties:
  *                         order_item_id:
  *                           type: integer
- *                           example: 48
+ *                           example: 13
  *                         order_id:
  *                           type: integer
- *                           example: 20
+ *                           example: 5
  *                         product_id:
  *                           type: string
- *                           example: "10000-FIL"
+ *                           example: "10000-USL"
  *                         product_name:
  *                           type: string
- *                           example: "Karhu 4,6%"
+ *                           example: "Pabst Blue Ribbon"
  *                         quantity:
  *                           type: integer
  *                           example: 1
  *                         product_price:
  *                           type: string
- *                           example: "11"
+ *                           example: "1"
  *                         total_price:
  *                           type: string
- *                           example: "11"
+ *                           example: "1"
  *                         product_description:
  *                           type: string
- *                           example: "Gulbrun, medelfyllig, medelstor humlebeska, lätt maltighet, fruktig"
+ *                           example: "Not the best."
  *                         product_image:
  *                           type: string
- *                           example: "/uploads/1740587181163-karhu-46-burk.jpg"
+ *                           example: "/uploads/1740679760255-pabst.jpeg"
  *                         product_country:
  *                           type: string
- *                           example: "Finland"
+ *                           example: "USA"
  *                         product_category:
  *                           type: string
  *                           example: "Lager"
+ *               example:
+ *                 - order_id: 5
+ *                   user_id: 18
+ *                   timestamp: "2025-03-04T23:18:59.504Z"
+ *                   order_price: "11.7"
+ *                   shipping_address: "123 Main St, City, Country"
+ *                   order_items:
+ *                     - order_item_id: 13
+ *                       order_id: 5
+ *                       product_id: "10000-USL"
+ *                       product_name: "Pabst Blue Ribbon"
+ *                       quantity: 1
+ *                       product_price: "1"
+ *                       total_price: "1"
+ *                       product_description: "Not the best."
+ *                       product_image: "/uploads/1740679760255-pabst.jpeg"
+ *                       product_country: "USA"
+ *                       product_category: "Lager"
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
  *       403:
- *         description: Access denied. Admins only.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Access denied. Admins only."
+ *         description: Forbidden - User is not an admin. Admin role required.
  *       404:
- *         description: No orders found.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "No orders found."
+ *         description: No orders found - There are no orders in the system.
  *       500:
- *         description: Server error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Failed to retrieve orders."
- *                 message:
- *                   type: string
- *                   example: "An unexpected error occurred while retrieving orders."
+ *         description: Internal server error - Error while retrieving orders
  */
 
-router.get("/admin/orders", async (req, res) => {
-  const role = req.user.role;
 
-  if (role !== 'admin') {
-    return res.status(403).json({ error: "Access denied. Admins only." });
-  }
-
+router.get("/admin/orders", adminMiddleware, async (req, res) => {
   try {
+    // Hämtar alla orders från databasen
     const orders = await prisma.orders.findMany({
-      include: {
-        order_items: true,
-      },
+      include: { order_items: true },
     });
 
+    // Om det inte finns några orders i databasen returnera 404
     if (orders.length === 0) {
       return res.status(404).json({ error: "No orders found." });
     }
 
+    // Returnera alla orders i databasen
     res.status(200).json(orders);
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Failed to retrieve orders.", message: error.message });
+    res.status(500).json({ error: "Failed to retrieve orders.", message: error.message });
   }
 });
 
@@ -157,14 +141,8 @@ router.get("/admin/orders", async (req, res) => {
  *     description: Fetches all orders related to a given user ID, which is extracted from the JWT token.
  *     operationId: getOrdersForUser
  *     tags: [Orders]
- *     parameters:
- *       - name: token
- *         in: header
- *         required: true
- *         description: The JWT token used for authentication. The user_id will be extracted from this token.
- *         schema:
- *           type: string
- *           description: The JWT token for authentication.
+ *     security:
+ *       - bearerAuth: []  # This specifies the bearer token authentication
  *     responses:
  *       200:
  *         description: Successfully retrieved orders.
@@ -184,7 +162,7 @@ router.get("/admin/orders", async (req, res) => {
  *                   timestamp:
  *                     type: string
  *                     format: date-time
- *                     example: "2025-03-03T17:07:12.701Z"
+ *                     example: "2025-03-03T17:07:12.701Z"  # Adjusted to your timestamp format
  *                   order_price:
  *                     type: string
  *                     example: "11"
@@ -261,26 +239,31 @@ router.get("/orders", async (req, res) => {
   const user_id = req.user.sub; // Hämtar user_id från JWTn
 
   try {
+    // Hämtar alla orders för en specifik användare
     const orders = await prisma.orders.findMany({
-      // Hittar alla orders som hör till denna user_id
       where: { user_id: parseInt(user_id) },
-      include: { // Inkluderar orderItems
+      include: {
         order_items: true,
       },
     });
 
+    // Om det inte finns några orders för användaren returnera 404
     if (orders.length === 0) {
-      // Om användaren inte har någon order
-      return res
-        .status(404)
-        .json({ msg: `No orders found for user with ID: ${user_id}.` });
+      return res.status(404).json({
+        msg: `No orders found for user with ID: ${user_id}.`,
+      });
     }
 
-    // Om allt ok, returnerar orders
+    // Returnera alla orders för användaren
     res.status(200).json(orders);
-  } catch (err) { // Om någonting misslyckas, returnera error kod 500
+  } catch (err) {
     console.error("Error fetching orders:", err);
-    res.status(500).json({ msg: "Internal server error" });
+
+    // Returnera 500 om något går fel
+    res.status(500).json({
+      msg: "Internal server error",
+      error: err.message,
+    });
   }
 });
 
@@ -293,12 +276,6 @@ router.get("/orders", async (req, res) => {
  *     operationId: createOrder
  *     tags:
  *       - Orders
- *     parameters:
- *       - name: token
- *         in: header
- *         description: The JWT token used for authentication. Required for order creation.
- *         required: true
- *         type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -435,6 +412,18 @@ router.get("/orders", async (req, res) => {
  *                 message:
  *                   type: string
  *                   example: "An unexpected error occurred while creating the order"
+ *     security:
+ *       - bearerAuth: []  # Add this section to indicate that the API requires authorization with a bearer token.
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
 
 router.post("/orders", getCartData, getProductData, checkInventory, async (req, res) => {
@@ -498,21 +487,20 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
  * /admin/delete/{order_id}:
  *   delete:
  *     summary: Delete an order (Admin access only)
- *     description: Deletes an order by its ID. Only accessible by admin users.
+ *     description: Deletes an order by its ID. Only accessible by admin users. The order is identified by the `order_id` path parameter.
  *     operationId: deleteOrder
  *     tags:
  *       - Orders
+ *     security:
+ *       - bearerAuth: []  # Requires JWT authentication (admin only)
  *     parameters:
  *       - name: order_id
  *         in: path
- *         description: The ID of the order to delete
+ *         description: The ID of the order to delete. This should be a valid integer representing the order's ID.
  *         required: true
- *         type: integer
- *       - name: token
- *         in: header
- *         description: The JWT token used for authentication. Required for admin access.
- *         required: true
- *         type: string
+ *         schema:
+ *           type: integer
+ *           example: 123  # Example ID to be deleted
  *     responses:
  *       200:
  *         description: Successfully deleted order
@@ -524,24 +512,21 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
  *                 message:
  *                   type: string
  *                   example: "Successfully deleted order with ID: 123"
- *       401: 
- *         description: Missing token. 
+ *       400:
+ *         description: Bad Request - Invalid order ID format
+ *       401:
+ *         description: Unauthorized - Missing or invalid token
  *       403:
- *         description: Access denied. Admins only.
+ *         description: Forbidden - User is not an admin
  *       404:
- *         description: Order not found.
+ *         description: Order not found - The order ID does not exist in the system
  *       500:
- *         description: Internal server error while deleting the order.
+ *         description: Internal server error while deleting the order
  */
 
 
-router.delete('/admin/delete/:order_id', async (req, res) => {
+router.delete("/admin/delete/:order_id", adminMiddleware, async (req, res) => {
   const { order_id } = req.params; // Hämtar order_id från URLen
-
-  // Kollar om användaren är en admin via dens JWT token
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: "Access denied. Admins only." });
-  }
 
   try {
     const order = await prisma.orders.findUnique({

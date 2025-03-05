@@ -1,36 +1,36 @@
 const jwt = require('jsonwebtoken');
-
 /**
  * Middleware för att verifiera JWT-token och skydda API-endpoints.
  *
- * Args:
- *  - req (Object): Express request-objekt, där JWT-token skickas i Authorization-headern
- *  - res (Object): Express response-objekt för att skicka tillbaka svar vid fel
- *  - next (Function): Nästa middleware eller route-handler
+ * @param {Object} req - Express request-objekt, förväntar sig JWT i Authorization-headern.
+ * @param {Object} res - Express response-objekt, används för att returnera felmeddelanden.
+ * @param {Function} next - Anropar nästa middleware eller route-handler.
  *
- * Returns:
- *  - Om ingen token tillhandahålls → HTTP 401 (Unauthorized)
- *  - Om token är ogiltig eller utgången → HTTP 403 (Forbidden)
- *  - Om token är giltig → Lägger till `req.user` och går vidare till nästa middleware
+ * @returns
+ * - 401 Unauthorized om ingen token tillhandahålls.
+ * - 403 Forbidden om token är ogiltig eller har gått ut.
+ * - Om token är giltig läggs `req.user` och `req.token` till, sedan anropas `next()`.
  *
  * Exempel på användning:
- *  - router.get("/orders/:user_id", authenticateToken, getOrders);
+ * - router.get("/orders/:user_id", authenticateToken, getOrders);
  */
 function authenticateToken(req, res, next) {
-    const token = req.headers["token"]; // Token skickas i Authorization-headern
+    const authHeader = req.headers["authorization"];
 
-    if (!token) {
-        return res.status(401).json({ msg: "Åtkomst nekad. Ingen token tillhandahållen." });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ msg: "Access denied. No token provided." });
     }
 
+    const token = authHeader.split(" ")[1].trim();
+
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifierar token med vår hemliga nyckel
-        req.user = decoded; // Lägger till användardata i request-objektet
-        req.token = token; // Lägger till token i request-objektet
-        next(); 
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifiera token
+        req.user = decoded; // Spara användarinformation i request-objektet
+        req.token = token; // Spara token i request-objektet
+        next(); // Fortsätt till nästa middleware
     } catch (err) {
-        console.error("Token verification error:", err); // Log error for debugging
-        return res.status(403).json({ msg: "Ogiltig eller utgången token." });
+        console.error("Token verification error:", err);
+        return res.status(403).json({ msg: "Invalid or expired token." });
     }
 }
 

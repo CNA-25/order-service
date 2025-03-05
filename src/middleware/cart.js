@@ -1,60 +1,65 @@
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL;
 
+// Middleware för att hämta kundvagnsdata
 const getCartData = async (req, res, next) => {
-    const { shipping_address } = req.body; // hämtar shipping_address från req
+    const { shipping_address } = req.body; // Hämta leveransadress från request body
 
-    // kollar att shipping_address inte är tom
+    // Kontrollera att leveransadressen inte är tom
     if (!shipping_address || shipping_address.trim() === '') {
         return res.status(400).json({ message: 'Shipping address is required' });
-
     }
+
     const user_id = req.user.sub; // user_id kommer från JWTn
     const token = req.token; // Får token från middleware
 
+    if (!user_id) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
     try {
         // Hämta kundvagnen för en specifik användare
+        console.log(`Fetching cart for user ${user_id}...`);
         const response = await fetch(`${CART_SERVICE_URL}/cart/${user_id}`, {
             method: "GET",
             headers: {
-                'token': token // Kommer från JWT token
+                'token': token // Skickar JWT-token i headern
             }
         });
 
-        // Om hämtningen misslyckas
+        // Kontrollera om hämtningen lyckades
         if (!response.ok) {
-            console.error(`Misslyckades med att hämta kundvagn för användare ${user_id}`);
+            console.error(`Failed to fetch cart for user ${user_id}`);
+            const errorResponse = await response.json();
+            console.error("Error from Cart Service:", errorResponse);
             return res.status(response.status).json({
-                error: `Misslyckades att hämta kundvagn för användare ${user_id}`,
-                message: cartData.message || "Ett fel uppstod vid hämtning av kundvagnsdata",
+                error: `Failed to fetch cart for user ${user_id}`,
+                message: errorResponse.message || "An error occurred while fetching cart data."
             });
         }
 
         // Får cartData i JSON format
         const cartData = await response.json();
 
-        // Kollar att cartData existerar och inte är tom
+        console.log("Cart Data Fetched - OK");
+
+        // Kontrollera om kundvagnen är tom
         if (!cartData || !cartData.cart || !cartData.cart.length) {
-            console.error(`Ingen kundvagn hittades för användare ${user_id}`);
+            console.error(`No cart found for user ${user_id}`);
             return res.status(200).json({
-                message: "Kundvagnen är tom",
+                message: "The cart is empty.",
                 cart: []
             });
         }
 
-        // Lägg till cartData i request objektet för att användas i nästa middleware
-        req.cartData = cartData;
+        req.cartData = cartData; // Spara kundvagnsdata i request-objektet
+        req.shipping_address = shipping_address; // Spara leveransadress i request-objektet
+        next(); // Gå vidare till nästa middleware
 
-        // sparar shipping address i req objektet
-        req.shipping_address = shipping_address;
-
-        // Fortsätt till nästa middleware (checkInventory)
-        next();
-
-    } catch (error) { // Om något annat går fel...
-        console.error(`Ett oväntat fel inträffade vid hämtning av kundvagnsdata för användare ${user_id}`, error);
+    } catch (error) {
+        console.error(`Unexpected error occurred while fetching cart data for user ${user_id}`, error);
         return res.status(500).json({
-            error: "Oväntat fel",
-            message: "Ett oväntat fel inträffade vid hämtning av kundvagnsdata"
+            error: "Unexpected error",
+            message: "An unexpected error occurred while fetching cart data."
         });
     }
 };
