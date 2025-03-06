@@ -2,9 +2,6 @@ const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL;
 
 // Middleware för att hämta produktdata baserat på kundvagnens innehåll
 const getProductData = async (req, res, next) => {
-
-    // kunde göras med en enkel loop, loopa alla cart items ett i taget, get producterna i varje loop
-
     const cartData = req.cartData; // Hämta kundvagnsdata från föregående middleware
     const token = req.token;
 
@@ -30,8 +27,6 @@ const getProductData = async (req, res, next) => {
         });
 
         // Kontrollera om förfrågan lyckades
-        // TODO behöver tydligare beskrivning VAD i responsen som är !OK,
-        // själva felet kan komma från products
         if (!response.ok) {
             let errorMessage = `Failed to fetch product data. Status: ${response.status}`; // Basic error message
         
@@ -43,8 +38,15 @@ const getProductData = async (req, res, next) => {
             } catch (e) { // Om parsing misslyckas, använd statusText som fallback
                 errorMessage += ` - ${response.statusText}`;
             }
-        
-            throw new Error(errorMessage);
+
+            // Backend returnerar antingen 400 eller 500 som errorkod
+            if (response.status === 400) {
+                throw new Error(`Bad Request: ${errorMessage}`);
+            } else if (response.status === 500) {
+                throw new Error(`Server Error: ${errorMessage}`);
+            } else {
+                throw new Error(errorMessage); // Hantera andra möjliga felstatusar
+            }
         }
 
         // Parsa JSON-svar
