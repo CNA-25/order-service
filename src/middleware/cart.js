@@ -12,10 +12,6 @@ const getCartData = async (req, res, next) => {
     const user_id = req.user.sub; // user_id kommer från JWTn
     const token = req.token; // Får token från middleware
 
-    if (!user_id) {
-        return res.status(400).json({ message: 'User ID is required' });
-    }
-
     try {
         // Hämta kundvagnen för en specifik användare
         console.log(`Fetching cart for user ${user_id}...`);
