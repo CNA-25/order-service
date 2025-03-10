@@ -17,11 +17,13 @@ const jwt = require('jsonwebtoken');
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader) {
         return res.status(401).json({ msg: "Access denied. No token provided." });
     }
-
-    const token = authHeader.split(" ")[1].trim();
+    
+    // Tillåt både "Bearer token" och "token" i Authorization-header
+    const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1].trim() : authHeader.trim();
+    
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifiera token
