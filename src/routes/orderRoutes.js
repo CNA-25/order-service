@@ -460,6 +460,22 @@ router.post("/orders", getCartData, getProductData, checkInventory, async (req, 
       include: { order_items: true },
     });
 
+    // --- TÖM VARUKORG EFTER ATT ORDER SKAPATS ---
+    const CART_SERVICE_URL = process.env.CART_SERVICE_URL;
+
+    const cartResponse = await fetch(`${CART_SERVICE_URL}/cart/${user_id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        token: token,
+      },
+    });
+
+    if (!cartResponse.ok) {
+      // 
+      console.error('Failed to delete cart:', cartResponse.statusText);
+    }
+
     // Skickar newOrder till sendOrder och får tillbaks invoiceStatus, invoiceMessage, emailStatus, emailMessage
     const { invoiceStatus, invoiceMessage, emailStatus, emailMessage } = await sendOrder(newOrder, token);
 
@@ -530,7 +546,7 @@ router.delete("/admin/delete/:order_id", adminMiddleware, async (req, res) => {
 
   try {
     const order = await prisma.orders.findUnique({
-      where: { order_id: parseInt(order_id)}
+      where: { order_id: parseInt(order_id) }
     })
 
     if (!order) {
