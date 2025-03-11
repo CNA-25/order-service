@@ -7,14 +7,10 @@ require("dotenv").config();
 const app = express();
 
 // CORS - Tillåter anrop från specifika källor
-const allowedOrigins = [
-    process.env.USERS_FRONTEND_URL, 
-    process.env.STORE_FRONTEND_URL  
-];
 app.use(cors({
-    origin: allowedOrigins,
+    origin: '*', // tillåt allt för stunden
     methods: "GET, POST, PUT, DELETE", 
-    allowedHeaders: ["Content-Type", "Authorization", "token"], // Tillåt specifika headers
+    allowedHeaders: ["Content-Type", "Authorization", "token"], // Allow specific headers
     credentials: true,
 }));
 
